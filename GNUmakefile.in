@@ -33,6 +33,7 @@ LIBS				= @CIFPP_LIBS@ \
 					  @ZEEP_LIBS@ \
 					  @PDB_REDO_LIBS@ \
 					  @CLIPPER_LIBS@ \
+					  @ZEEP_LIBS@ \
 					  @BOOST_PROGRAM_OPTIONS_LIB@ \
 					  @BOOST_REGEX_LIB@ \
 					  @BOOST_IOSTREAMS_LIB@ \
@@ -132,7 +133,10 @@ endif
 
 ifneq "$(USE_RSRC)" "0"
 
-rsrc/version.txt: $(REVISION_FILE)
+rsrc:
+	@ mkdir -p $@
+
+rsrc/version.txt: $(REVISION_FILE) | rsrc
 	cp $? $@
 
 endif
@@ -146,7 +150,10 @@ ifneq "$(USE_RSRC)" "0"
 
 OBJECTS += $(OBJDIR)/$(PROGRAM)_rsrc.o
 
-$(OBJDIR)/$(PROGRAM)_rsrc.o: $(LIBPDB_REDO_DATA_DIR)/bond-info.bin $(LIBCIFPP_DATA_DIR)/mmcif_pdbx_v50.cif
+rsrc/bond-info.bin: $(LIBPDB_REDO_DATA_DIR)/bond-info.bin.gz | rsrc
+	ln -s $^ $@
+
+$(OBJDIR)/$(PROGRAM)_rsrc.o: rsrc/bond-info.bin $(LIBCIFPP_DATA_DIR)/mmcif_pdbx_v50.dic
 	$(MRC) -o $@ $^
 
 endif
