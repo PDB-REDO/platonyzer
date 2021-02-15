@@ -36,6 +36,7 @@ LIBS				= @CIFPP_LIBS@ \
 					  @ZEEP_LIBS@ \
 					  @BOOST_PROGRAM_OPTIONS_LIB@ \
 					  @BOOST_REGEX_LIB@ \
+					  @BOOST_DATE_TIME_LIB@ \
 					  @BOOST_IOSTREAMS_LIB@ \
 					  @LIBS@
 

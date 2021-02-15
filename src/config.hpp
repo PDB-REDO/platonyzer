@@ -4,6 +4,9 @@
 /* define if the Boost library is available */
 #define HAVE_BOOST /**/
 
+/* define if the Boost::Date_Time library is available */
+#define HAVE_BOOST_DATE_TIME /**/
+
 /* define if the Boost::IOStreams library is available */
 #define HAVE_BOOST_IOSTREAMS /**/
 
@@ -24,6 +27,12 @@
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
+
+/* Define to 1 if LIBBZ2 is found */
+#define HAVE_LIBBZ2 1
+
+/* Define to 1 if LIBZ is found */
+#define HAVE_LIBZ 1
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
