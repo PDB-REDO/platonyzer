@@ -629,10 +629,11 @@ LIBBZ2_LDFLAGS
 LIBBZ2_CPPFLAGS
 LIBZ_LDFLAGS
 LIBZ_CPPFLAGS
-CLIPPER_LDFLAGS
-CLIPPER_CPPFLAGS
 CLIPPER_LIBS
 CLIPPER_CFLAGS
+CLIPPER_LDFLAGS
+CLIPPER_CPPFLAGS
+CCP4
 LIBPDB_REDO_DATA_DIR
 PDB_REDO_LDFLAGS
 PDB_REDO_CPPFLAGS
@@ -780,10 +781,11 @@ PDB_REDO_LIBS
 PDB_REDO_CPPFLAGS
 PDB_REDO_LDFLAGS
 LIBPDB_REDO_DATA_DIR
-CLIPPER_CFLAGS
-CLIPPER_LIBS
+CCP4
 CLIPPER_CPPFLAGS
 CLIPPER_LDFLAGS
+CLIPPER_CFLAGS
+CLIPPER_LIBS
 LIBZ_CPPFLAGS
 LIBZ_LDFLAGS
 LIBBZ2_CPPFLAGS
@@ -1497,14 +1499,15 @@ Some influential environment variables:
               linker flags for PDB_REDO libraries
   LIBPDB_REDO_DATA_DIR
               Directory containing bond-info.bin file
-  CLIPPER_CFLAGS
-              C compiler flags for CLIPPER, overriding pkg-config
-  CLIPPER_LIBS
-              linker flags for CLIPPER, overriding pkg-config
+  CCP4        The location where CCP4 is installed
   CLIPPER_CPPFLAGS
               C preprocessor flags for CLIPPER headers
   CLIPPER_LDFLAGS
               linker flags for CLIPPER libraries
+  CLIPPER_CFLAGS
+              C compiler flags for CLIPPER, overriding pkg-config
+  CLIPPER_LIBS
+              linker flags for CLIPPER, overriding pkg-config
   LIBZ_CPPFLAGS
               C preprocessor flags for LIBZ headers
   LIBZ_LDFLAGS
@@ -7910,6 +7913,149 @@ fi
 LIBPDB_REDO_DATA_DIR=$LIBPDB_REDO_DATA_DIR
 
 
+
+
+if test x"$CCP4" != x""; then :
+
+	CPPFLAGS="$CPPFLAGS -I ${CCP4}/include"
+	CXXFLAGS="$CXXFLAGS -I ${CCP4}/include"
+	LDFLAGS="$LDFLAGS -L${CCP4}/lib"
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -Wl,-rpath=/tmp" >&5
+$as_echo_n "checking whether the linker accepts -Wl,-rpath=/tmp... " >&6; }
+if ${ax_cv_check_ldflags___Wl__rpath__tmp+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  ax_check_save_flags=$LDFLAGS
+  LDFLAGS="$LDFLAGS  -Wl,-rpath=/tmp"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ax_cv_check_ldflags___Wl__rpath__tmp=yes
+else
+  ax_cv_check_ldflags___Wl__rpath__tmp=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  LDFLAGS=$ax_check_save_flags
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___Wl__rpath__tmp" >&5
+$as_echo "$ax_cv_check_ldflags___Wl__rpath__tmp" >&6; }
+if test "x$ax_cv_check_ldflags___Wl__rpath__tmp" = xyes; then :
+
+		LDFLAGS="$LDFLAGS -Wl,-rpath=${CCP4}/lib"
+else
+  :
+fi
+
+
+	ac_fn_cxx_check_header_mongrel "$LINENO" "clipper/clipper.h" "ac_cv_header_clipper_clipper_h" "$ac_includes_default"
+if test "x$ac_cv_header_clipper_clipper_h" = xyes; then :
+
+else
+  as_fn_error $? "
+Can't find the libclipper header, clipper/clipper.h.  Make sure that libclipper
+is installed, and either use the --with-clipper option or install
+pkg-config." "$LINENO" 5
+fi
+
+
+
+
+
+
+
+  if ${ax_cv_have_CLIPPER+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  save_CPPFLAGS="$CPPFLAGS"
+     save_LDFLAGS="$LDFLAGS"
+     save_LIBS="$LIBS"
+
+     if test "x$CLIPPER_CPPFLAGS" != "x"; then :
+  CPPFLAGS="$CPPFLAGS $CLIPPER_CPPFLAGS"
+fi
+
+     if test "x$CLIPPER_LDFLAGS" != "x"; then :
+  LDFLAGS="$LDFLAGS $CLIPPER_LDFLAGS"
+fi
+
+     ac_fn_cxx_check_header_mongrel "$LINENO" "clipper/clipper.h" "ac_cv_header_clipper_clipper_h" "$ac_includes_default"
+if test "x$ac_cv_header_clipper_clipper_h" = xyes; then :
+
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lclipper-core" >&5
+$as_echo_n "checking for main in -lclipper-core... " >&6; }
+if ${ac_cv_lib_clipper_core_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lclipper-core  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_clipper_core_main=yes
+else
+  ac_cv_lib_clipper_core_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_clipper_core_main" >&5
+$as_echo "$ac_cv_lib_clipper_core_main" >&6; }
+if test "x$ac_cv_lib_clipper_core_main" = xyes; then :
+  ax_cv_have_CLIPPER=yes
+else
+  ax_cv_have_CLIPPER=no
+fi
+
+
+else
+  ax_cv_have_CLIPPER=no
+fi
+
+
+
+     CPPFLAGS="$save_CPPFLAGS"
+     LDFLAGS="$save_LDFLAGS"
+     LIBS="$save_LIBS"
+
+fi
+
+
+  if test "$ax_cv_have_CLIPPER" = "yes"; then :
+
+$as_echo "#define HAVE_CLIPPER 1" >>confdefs.h
+
+
+			CLIPPER_LIBS="-L${CCP4}/lib -lclipper-ccp4 -lclipper-cif -lclipper-minimol -lclipper-mmdb -lclipper-cns -lclipper-phs -lclipper-contrib -lclipper-core -lccp4c -lmmdb2 -lrfftw -lfftw"
+
+else
+  as_fn_error $? "libclipper not found" "$LINENO" 5
+fi
+
+
+fi
 
 
 # Check whether --with-clipper was given.

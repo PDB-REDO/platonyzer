@@ -224,7 +224,34 @@ AC_ARG_VAR([LIBPDB_REDO_DATA_DIR], [Directory containing bond-info.bin file])
 AC_SUBST([LIBPDB_REDO_DATA_DIR], [$LIBPDB_REDO_DATA_DIR])
 
 dnl Check for libclipper
+AC_ARG_VAR([CCP4], [The location where CCP4 is installed])
 
+AS_IF([test x"$CCP4" != x""],
+	[
+	CPPFLAGS="$CPPFLAGS -I ${CCP4}/include"
+	CXXFLAGS="$CXXFLAGS -I ${CCP4}/include"
+	LDFLAGS="$LDFLAGS -L${CCP4}/lib"
+
+	dnl since rpath is apparently something that is not ubiquitously available
+	AX_CHECK_LINK_FLAG([-Wl,-rpath=/tmp], [
+		LDFLAGS="$LDFLAGS -Wl,-rpath=${CCP4}/lib"])
+
+	AC_CHECK_HEADER(
+		[clipper/clipper.h],
+		[],
+		[AC_MSG_ERROR([
+Can't find the libclipper header, clipper/clipper.h.  Make sure that libclipper
+is installed, and either use the --with-clipper option or install
+pkg-config.])])
+
+	AX_CHECK_LIBRARY([CLIPPER], [clipper/clipper.h], [clipper-core],
+		[
+			CLIPPER_LIBS="-L${CCP4}/lib -lclipper-ccp4 -lclipper-cif -lclipper-minimol -lclipper-mmdb -lclipper-cns -lclipper-phs -lclipper-contrib -lclipper-core -lccp4c -lmmdb2 -lrfftw -lfftw"
+		],
+		[AC_MSG_ERROR([libclipper not found])])
+	])
+
+dnl Check for libclipper
 AC_ARG_WITH([clipper],
 	AS_HELP_STRING([--with-clipper=@<:@location@:>@],
 		[Use the libclipper library as specified.]),
