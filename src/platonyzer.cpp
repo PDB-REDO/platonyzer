@@ -773,7 +773,7 @@ int pr_main(int argc, char* argv[])
 
 	if (vm.count("version"))
 	{
-		std::cout << argv[0] << " version " << PACKAGE_VERSION << std::endl;
+		std::cout << argv[0] << " version " << VERSION_STRING << std::endl;
 		exit(0);
 	}
 
