@@ -332,7 +332,7 @@ bool findZincSites(c::Structure& structure, cif::Datablock& db, int spacegroup, 
 			{
 				if (cif::VERBOSE)
 					std::cerr << "Rejecting cluster since there are 5 or more atoms near by and nr 5 is not considered to be an outlier" << std::endl;
-				continue;
+				break;
 			}
 
 			if (cif::VERBOSE)
