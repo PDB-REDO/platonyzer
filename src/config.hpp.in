@@ -24,9 +24,6 @@
 /* define if the compiler supports basic C++17 syntax */
 #undef HAVE_CXX17
 
-/* Define to 1 if DLIB is found */
-#undef HAVE_DLIB
-
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
@@ -38,9 +35,6 @@
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
-
-/* Define to 1 if NEWUOA is found */
-#undef HAVE_NEWUOA
 
 /* Define to 1 if PDB_REDO is found */
 #undef HAVE_PDB_REDO

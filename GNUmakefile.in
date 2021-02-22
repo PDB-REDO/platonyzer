@@ -27,14 +27,16 @@ empty =
 space = $(empty) $(empty)
 
 CXX					= @CXX@
-CXXFLAGS			= @CXXFLAGS@ \
+CXXFLAGS			= @BOOST_CPPFLAGS@ \
+					  @CXXFLAGS@ \
 					  @CPPFLAGS@ \
 					  @PTHREAD_CFLAGS@ \
 					  @CIFPP_CFLAGS@ \
 					  @ZEEP_CFLAGS@ \
 					  @PDB_REDO_CFLAGS@ \
 					  @CLIPPER_CFLAGS@
-LDFLAGS				= @LDFLAGS@ \
+LDFLAGS				= @BOOST_LDFLAGS@ \
+					  @LDFLAGS@ \
 					  @PTHREAD_CFLAGS@
 LIBS				= @CIFPP_LIBS@ \
 					  @ZEEP_LIBS@ \
@@ -61,7 +63,7 @@ PROGRAM				= @PACKAGE_NAME@
 
 VERSION				= @PACKAGE_VERSION@
 
-SEARCH_PATHS		= src test rsrc @LIBCIFPP_DATA_DIR@ @LIBPDB_REDO_DATA_DIR@
+SEARCH_PATHS		= src test @LIBCIFPP_DATA_DIR@ @LIBPDB_REDO_DATA_DIR@
 
 OBJECTS				= $(PROGRAM).o
 
@@ -134,10 +136,8 @@ ifneq "$(USE_RSRC)" "0"
 
 OBJECTS += $(PROGRAM)_rsrc.o
 
-rsrc:
-	mkdir -p $@
-
-rsrc/%.dic: %.dic.gz | rsrc
+# dictionaries may be found compressed
+%.dic: %.dic.gz
 	gunzip -c $^ > $@
 
 $(OBJDIR)/$(PROGRAM)_rsrc.o: $(RESOURCES)
