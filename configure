@@ -629,16 +629,24 @@ LIBBZ2_LDFLAGS
 LIBBZ2_CPPFLAGS
 LIBZ_LDFLAGS
 LIBZ_CPPFLAGS
-CLIPPER_LIBS
-CLIPPER_CFLAGS
-CLIPPER_LDFLAGS
-CLIPPER_CPPFLAGS
-CCP4
+NEWUOA_LDFLAGS
+NEWUOA_CPPFLAGS
+NEWUOA_LIBS
+NEWUOA_CFLAGS
+DLIB_LIBS
+DLIB_CFLAGS
+DLIB_LDFLAGS
+DLIB_CPPFLAGS
 LIBPDB_REDO_DATA_DIR
 PDB_REDO_LDFLAGS
 PDB_REDO_CPPFLAGS
 PDB_REDO_LIBS
 PDB_REDO_CFLAGS
+CLIPPER_LIBS
+CLIPPER_CFLAGS
+CLIPPER_LDFLAGS
+CLIPPER_CPPFLAGS
+CCP4
 ZEEP_LDFLAGS
 ZEEP_CPPFLAGS
 ZEEP_LIBS
@@ -652,8 +660,8 @@ CIFPP_LIBS
 CIFPP_CFLAGS
 BOOST_REGEX_LIB
 BOOST_DATE_TIME_LIB
-BOOST_IOSTREAMS_LIB
 BOOST_PROGRAM_OPTIONS_LIB
+BOOST_IOSTREAMS_LIB
 BOOST_LDFLAGS
 BOOST_CPPFLAGS
 CXXCPP
@@ -740,14 +748,14 @@ enable_resources
 enable_revision
 with_boost
 with_boost_libdir
-with_boost_program_options
 with_boost_iostreams
+with_boost_program_options
 with_boost_date_time
 with_boost_regex
 with_cif__
 with_zeep
-with_pdb_redo
 with_clipper
+with_pdb_redo
 '
       ac_precious_vars='build_alias
 host_alias
@@ -776,16 +784,22 @@ ZEEP_CFLAGS
 ZEEP_LIBS
 ZEEP_CPPFLAGS
 ZEEP_LDFLAGS
-PDB_REDO_CFLAGS
-PDB_REDO_LIBS
-PDB_REDO_CPPFLAGS
-PDB_REDO_LDFLAGS
-LIBPDB_REDO_DATA_DIR
 CCP4
 CLIPPER_CPPFLAGS
 CLIPPER_LDFLAGS
 CLIPPER_CFLAGS
 CLIPPER_LIBS
+PDB_REDO_CFLAGS
+PDB_REDO_LIBS
+PDB_REDO_CPPFLAGS
+PDB_REDO_LDFLAGS
+LIBPDB_REDO_DATA_DIR
+DLIB_CPPFLAGS
+DLIB_LDFLAGS
+NEWUOA_CFLAGS
+NEWUOA_LIBS
+NEWUOA_CPPFLAGS
+NEWUOA_LDFLAGS
 LIBZ_CPPFLAGS
 LIBZ_LDFLAGS
 LIBBZ2_CPPFLAGS
@@ -1414,7 +1428,7 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --disable-resources     Use mrc to store data in resources
+  --disable-resources     Do not use mrc to store data in resources
   --disable-revision      Create a build number as revision
 
 Optional Packages:
@@ -1429,16 +1443,16 @@ Optional Packages:
                           this parameter only if default library detection
                           fails and you know exactly where your boost
                           libraries are located.
-  --with-boost-program-options[=special-lib]
-                          use the program options library from boost - it is
-                          possible to specify a certain library for the linker
-                          e.g.
-                          --with-boost-program-options=boost_program_options-gcc-mt-1_33_1
   --with-boost-iostreams[=special-lib]
                           use the IOStreams library from boost - it is
                           possible to specify a certain library for the linker
                           e.g.
                           --with-boost-iostreams=boost_iostreams-gcc-mt-d-1_33_1
+  --with-boost-program-options[=special-lib]
+                          use the program options library from boost - it is
+                          possible to specify a certain library for the linker
+                          e.g.
+                          --with-boost-program-options=boost_program_options-gcc-mt-1_33_1
   --with-boost-date-time[=special-lib]
                           use the Date_Time library from boost - it is
                           possible to specify a certain library for the linker
@@ -1450,10 +1464,10 @@ Optional Packages:
                           --with-boost-regex=boost_regex-gcc-mt-d-1_33_1
   --with-cif++=[location] Use the cif++ library as specified.
   --with-zeep=[location]  Use the libzeep library as specified.
-  --with-pdb-redo=[location]
-                          Use the pdb-redo library as specified.
   --with-clipper=[location]
                           Use the libclipper library as specified.
+  --with-pdb-redo=[location]
+                          Use the pdb-redo library as specified.
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -1489,6 +1503,15 @@ Some influential environment variables:
               C preprocessor flags for ZEEP headers
   ZEEP_LDFLAGS
               linker flags for ZEEP libraries
+  CCP4        The location where CCP4 is installed
+  CLIPPER_CPPFLAGS
+              C preprocessor flags for CLIPPER headers
+  CLIPPER_LDFLAGS
+              linker flags for CLIPPER libraries
+  CLIPPER_CFLAGS
+              C compiler flags for CLIPPER, overriding pkg-config
+  CLIPPER_LIBS
+              linker flags for CLIPPER, overriding pkg-config
   PDB_REDO_CFLAGS
               C compiler flags for PDB_REDO, overriding pkg-config
   PDB_REDO_LIBS
@@ -1499,15 +1522,17 @@ Some influential environment variables:
               linker flags for PDB_REDO libraries
   LIBPDB_REDO_DATA_DIR
               Directory containing bond-info.bin file
-  CCP4        The location where CCP4 is installed
-  CLIPPER_CPPFLAGS
-              C preprocessor flags for CLIPPER headers
-  CLIPPER_LDFLAGS
-              linker flags for CLIPPER libraries
-  CLIPPER_CFLAGS
-              C compiler flags for CLIPPER, overriding pkg-config
-  CLIPPER_LIBS
-              linker flags for CLIPPER, overriding pkg-config
+  DLIB_CPPFLAGS
+              C preprocessor flags for DLIB headers
+  DLIB_LDFLAGS
+              linker flags for DLIB libraries
+  NEWUOA_CFLAGS
+              C compiler flags for NEWUOA, overriding pkg-config
+  NEWUOA_LIBS linker flags for NEWUOA, overriding pkg-config
+  NEWUOA_CPPFLAGS
+              C preprocessor flags for NEWUOA headers
+  NEWUOA_LDFLAGS
+              linker flags for NEWUOA libraries
   LIBZ_CPPFLAGS
               C preprocessor flags for LIBZ headers
   LIBZ_LDFLAGS
@@ -6345,231 +6370,6 @@ fi
 
 
 
-# Check whether --with-boost-program-options was given.
-if test "${with_boost_program_options+set}" = set; then :
-  withval=$with_boost_program_options;
-        if test "$withval" = "no"; then
-			want_boost="no"
-        elif test "$withval" = "yes"; then
-            want_boost="yes"
-            ax_boost_user_program_options_lib=""
-        else
-		    want_boost="yes"
-		ax_boost_user_program_options_lib="$withval"
-		fi
-
-else
-  want_boost="yes"
-
-fi
-
-
-	if test "x$want_boost" = "xyes"; then
-
-	    export want_boost
-		CPPFLAGS_SAVED="$CPPFLAGS"
-		CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-		export CPPFLAGS
-		LDFLAGS_SAVED="$LDFLAGS"
-		LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-		export LDFLAGS
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the Boost::Program_Options library is available" >&5
-$as_echo_n "checking whether the Boost::Program_Options library is available... " >&6; }
-if ${ax_cv_boost_program_options+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-				cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <boost/program_options/errors.hpp>
-
-int
-main ()
-{
-boost::program_options::error err("Error message");
-                                   return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  ax_cv_boost_program_options=yes
-else
-  ax_cv_boost_program_options=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-					ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_boost_program_options" >&5
-$as_echo "$ax_cv_boost_program_options" >&6; }
-		if test "$ax_cv_boost_program_options" = yes; then
-
-$as_echo "#define HAVE_BOOST_PROGRAM_OPTIONS /**/" >>confdefs.h
-
-                  BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/[^\/]*//'`
-                if test "x$ax_boost_user_program_options_lib" = "x"; then
-                for libextension in `ls $BOOSTLIBDIR/libboost_program_options*.so* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_program_options.*\)\.so.*$;\1;'` `ls $BOOSTLIBDIR/libboost_program_options*.dylib* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_program_options.*\)\.dylib.*$;\1;'` `ls $BOOSTLIBDIR/libboost_program_options*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_program_options.*\)\.a.*$;\1;'` ; do
-                     ax_lib=${libextension}
-				    as_ac_Lib=`$as_echo "ac_cv_lib_$ax_lib''_exit" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for exit in -l$ax_lib" >&5
-$as_echo_n "checking for exit in -l$ax_lib... " >&6; }
-if eval \${$as_ac_Lib+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-l$ax_lib  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char exit ();
-int
-main ()
-{
-return exit ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  eval "$as_ac_Lib=yes"
-else
-  eval "$as_ac_Lib=no"
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-eval ac_res=\$$as_ac_Lib
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
-  BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib";  link_program_options="yes"; break
-else
-  link_program_options="no"
-fi
-
-				done
-                if test "x$link_program_options" != "xyes"; then
-                for libextension in `ls $BOOSTLIBDIR/boost_program_options*.dll* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_program_options.*\)\.dll.*$;\1;'` `ls $BOOSTLIBDIR/boost_program_options*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_program_options.*\)\.a.*$;\1;'` ; do
-                     ax_lib=${libextension}
-				    as_ac_Lib=`$as_echo "ac_cv_lib_$ax_lib''_exit" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for exit in -l$ax_lib" >&5
-$as_echo_n "checking for exit in -l$ax_lib... " >&6; }
-if eval \${$as_ac_Lib+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-l$ax_lib  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char exit ();
-int
-main ()
-{
-return exit ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  eval "$as_ac_Lib=yes"
-else
-  eval "$as_ac_Lib=no"
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-eval ac_res=\$$as_ac_Lib
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
-  BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib";  link_program_options="yes"; break
-else
-  link_program_options="no"
-fi
-
-				done
-                fi
-                else
-                  for ax_lib in $ax_boost_user_program_options_lib boost_program_options-$ax_boost_user_program_options_lib; do
-				      as_ac_Lib=`$as_echo "ac_cv_lib_$ax_lib''_main" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -l$ax_lib" >&5
-$as_echo_n "checking for main in -l$ax_lib... " >&6; }
-if eval \${$as_ac_Lib+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-l$ax_lib  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main ()
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  eval "$as_ac_Lib=yes"
-else
-  eval "$as_ac_Lib=no"
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-eval ac_res=\$$as_ac_Lib
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
-  BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib";  link_program_options="yes"; break
-else
-  link_program_options="no"
-fi
-
-                  done
-                fi
-            if test "x$ax_lib" = "x"; then
-                as_fn_error $? "Could not find a version of the library!" "$LINENO" 5
-            fi
-				if test "x$link_program_options" != "xyes"; then
-					as_fn_error $? "Could not link against $ax_lib !" "$LINENO" 5
-				fi
-		fi
-		CPPFLAGS="$CPPFLAGS_SAVED"
-	LDFLAGS="$LDFLAGS_SAVED"
-	fi
-
-
-
 # Check whether --with-boost-iostreams was given.
 if test "${with_boost_iostreams+set}" = set; then :
   withval=$with_boost_iostreams;
@@ -6797,6 +6597,231 @@ fi
 			fi
 		fi
 
+		CPPFLAGS="$CPPFLAGS_SAVED"
+	LDFLAGS="$LDFLAGS_SAVED"
+	fi
+
+
+
+# Check whether --with-boost-program-options was given.
+if test "${with_boost_program_options+set}" = set; then :
+  withval=$with_boost_program_options;
+        if test "$withval" = "no"; then
+			want_boost="no"
+        elif test "$withval" = "yes"; then
+            want_boost="yes"
+            ax_boost_user_program_options_lib=""
+        else
+		    want_boost="yes"
+		ax_boost_user_program_options_lib="$withval"
+		fi
+
+else
+  want_boost="yes"
+
+fi
+
+
+	if test "x$want_boost" = "xyes"; then
+
+	    export want_boost
+		CPPFLAGS_SAVED="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+		export CPPFLAGS
+		LDFLAGS_SAVED="$LDFLAGS"
+		LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+		export LDFLAGS
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the Boost::Program_Options library is available" >&5
+$as_echo_n "checking whether the Boost::Program_Options library is available... " >&6; }
+if ${ax_cv_boost_program_options+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+				cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <boost/program_options/errors.hpp>
+
+int
+main ()
+{
+boost::program_options::error err("Error message");
+                                   return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ax_cv_boost_program_options=yes
+else
+  ax_cv_boost_program_options=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+					ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_boost_program_options" >&5
+$as_echo "$ax_cv_boost_program_options" >&6; }
+		if test "$ax_cv_boost_program_options" = yes; then
+
+$as_echo "#define HAVE_BOOST_PROGRAM_OPTIONS /**/" >>confdefs.h
+
+                  BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/[^\/]*//'`
+                if test "x$ax_boost_user_program_options_lib" = "x"; then
+                for libextension in `ls $BOOSTLIBDIR/libboost_program_options*.so* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_program_options.*\)\.so.*$;\1;'` `ls $BOOSTLIBDIR/libboost_program_options*.dylib* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_program_options.*\)\.dylib.*$;\1;'` `ls $BOOSTLIBDIR/libboost_program_options*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_program_options.*\)\.a.*$;\1;'` ; do
+                     ax_lib=${libextension}
+				    as_ac_Lib=`$as_echo "ac_cv_lib_$ax_lib''_exit" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for exit in -l$ax_lib" >&5
+$as_echo_n "checking for exit in -l$ax_lib... " >&6; }
+if eval \${$as_ac_Lib+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-l$ax_lib  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char exit ();
+int
+main ()
+{
+return exit ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  eval "$as_ac_Lib=yes"
+else
+  eval "$as_ac_Lib=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+eval ac_res=\$$as_ac_Lib
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
+  BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib";  link_program_options="yes"; break
+else
+  link_program_options="no"
+fi
+
+				done
+                if test "x$link_program_options" != "xyes"; then
+                for libextension in `ls $BOOSTLIBDIR/boost_program_options*.dll* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_program_options.*\)\.dll.*$;\1;'` `ls $BOOSTLIBDIR/boost_program_options*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_program_options.*\)\.a.*$;\1;'` ; do
+                     ax_lib=${libextension}
+				    as_ac_Lib=`$as_echo "ac_cv_lib_$ax_lib''_exit" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for exit in -l$ax_lib" >&5
+$as_echo_n "checking for exit in -l$ax_lib... " >&6; }
+if eval \${$as_ac_Lib+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-l$ax_lib  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char exit ();
+int
+main ()
+{
+return exit ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  eval "$as_ac_Lib=yes"
+else
+  eval "$as_ac_Lib=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+eval ac_res=\$$as_ac_Lib
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
+  BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib";  link_program_options="yes"; break
+else
+  link_program_options="no"
+fi
+
+				done
+                fi
+                else
+                  for ax_lib in $ax_boost_user_program_options_lib boost_program_options-$ax_boost_user_program_options_lib; do
+				      as_ac_Lib=`$as_echo "ac_cv_lib_$ax_lib''_main" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -l$ax_lib" >&5
+$as_echo_n "checking for main in -l$ax_lib... " >&6; }
+if eval \${$as_ac_Lib+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-l$ax_lib  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  eval "$as_ac_Lib=yes"
+else
+  eval "$as_ac_Lib=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+eval ac_res=\$$as_ac_Lib
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
+  BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib";  link_program_options="yes"; break
+else
+  link_program_options="no"
+fi
+
+                  done
+                fi
+            if test "x$ax_lib" = "x"; then
+                as_fn_error $? "Could not find a version of the library!" "$LINENO" 5
+            fi
+				if test "x$link_program_options" != "xyes"; then
+					as_fn_error $? "Could not link against $ax_lib !" "$LINENO" 5
+				fi
+		fi
 		CPPFLAGS="$CPPFLAGS_SAVED"
 	LDFLAGS="$LDFLAGS_SAVED"
 	fi
@@ -7373,9 +7398,10 @@ fi
 
 
 
+		LIBCIFPP_DATA_DIR=$(pkg-config --variable=datalibdir libcifpp)
 	else
-		ac_fn_cxx_check_header_mongrel "$LINENO" "cif++/Config.hpp" "ac_cv_header_cifpp_Config_hpp" "$ac_includes_default"
-if test "x$ac_cv_header_cifpp_Config_hpp" = xyes; then :
+		ac_fn_cxx_check_header_mongrel "$LINENO" "cif++/Cif++.hpp" "ac_cv_header_cifpp_Cifpp_hpp" "$ac_includes_default"
+if test "x$ac_cv_header_cifpp_Cifpp_hpp" = xyes; then :
 
 
 else
@@ -7406,8 +7432,8 @@ fi
   LDFLAGS="$LDFLAGS $CIFPP_LDFLAGS"
 fi
 
-     ac_fn_cxx_check_header_mongrel "$LINENO" "cif++/Config.hpp" "ac_cv_header_cifpp_Config_hpp" "$ac_includes_default"
-if test "x$ac_cv_header_cifpp_Config_hpp" = xyes; then :
+     ac_fn_cxx_check_header_mongrel "$LINENO" "cif++/Cif++.hpp" "ac_cv_header_cifpp_Cifpp_hpp" "$ac_includes_default"
+if test "x$ac_cv_header_cifpp_Cifpp_hpp" = xyes; then :
 
        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lcifpp" >&5
 $as_echo_n "checking for main in -lcifpp... " >&6; }
@@ -7470,11 +7496,13 @@ else
   as_fn_error $? "libcif++ not found" "$LINENO" 5
 fi
 
-	fi
-
-	if  test -f /var/cache/libcifpp/mmcif_pdbx_v50.dic ; then :
+		if  test -f /usr/local/share/libcifpp/mmcif_pdbx_v50.dic.gz ; then :
+  LIBCIFPP_DATA_DIR=/usr/local/share/libcifpp/
+fi
+		if  test -f /var/cache/libcifpp/mmcif_pdbx_v50.dic.gz ; then :
   LIBCIFPP_DATA_DIR=/var/cache/libcifpp
 fi
+	fi
 
 fi
 
@@ -7690,230 +7718,6 @@ fi
 	fi
 
 fi
-
-
-
-# Check whether --with-pdb-redo was given.
-if test "${with_pdb_redo+set}" = set; then :
-  withval=$with_pdb_redo;
-			if test -d ${withval}/include; then :
-
-else
-
-				as_fn_error $? "'${withval}'' is not a valid directory for --with-pdb-redo" "$LINENO" 5
-
-fi
-
-			PDB_REDO_CFLAGS="-I ${withval}/include"
-			PDB_REDO_LIBS="-L${withval}/.libs -lpdb-redo"
-			LIBPDB_REDO_DATA_DIR="${withval}/rsrc"
-
-			PDB_REDO_CFLAGS=$PDB_REDO_CFLAGS
-
-			PDB_REDO_LIBS=$PDB_REDO_LIBS
-
-
-fi
-
-
-if test "x$PDB_REDO_LIBS" = "x"; then :
-
-	if test -x "$PKG_CONFIG"
-	then
-
-
-
-
-    AX_PACKAGE_REQUIRES="$AX_PACKAGE_REQUIRES libpdb-redo"
-    AX_PACKAGE_REQUIRES_PRIVATE="$AX_PACKAGE_REQUIRES_PRIVATE "
-
-
-pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for PDB_REDO" >&5
-$as_echo_n "checking for PDB_REDO... " >&6; }
-
-if test -n "$PDB_REDO_CFLAGS"; then
-    pkg_cv_PDB_REDO_CFLAGS="$PDB_REDO_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpdb-redo \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libpdb-redo ") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_PDB_REDO_CFLAGS=`$PKG_CONFIG --cflags "libpdb-redo " 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$PDB_REDO_LIBS"; then
-    pkg_cv_PDB_REDO_LIBS="$PDB_REDO_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpdb-redo \""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libpdb-redo ") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_PDB_REDO_LIBS=`$PKG_CONFIG --libs "libpdb-redo " 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        PDB_REDO_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpdb-redo " 2>&1`
-        else
-	        PDB_REDO_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpdb-redo " 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$PDB_REDO_PKG_ERRORS" >&5
-
-	as_fn_error $? "the required package libpdb-redo is not installed" "$LINENO" 5
-elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-	as_fn_error $? "the required package libpdb-redo is not installed" "$LINENO" 5
-else
-	PDB_REDO_CFLAGS=$pkg_cv_PDB_REDO_CFLAGS
-	PDB_REDO_LIBS=$pkg_cv_PDB_REDO_LIBS
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-
-fi
-
-    # Substitute output.
-
-
-
-	else
-		ac_fn_cxx_check_header_mongrel "$LINENO" "pdb-redo/Config.hpp" "ac_cv_header_pdb_redo_Config_hpp" "$ac_includes_default"
-if test "x$ac_cv_header_pdb_redo_Config_hpp" = xyes; then :
-
-
-else
-  as_fn_error $? "
-Can't find the libpdb-redo header, Config.hpp.  Make sure that it
-is installed, and either use the --with-pdb-redo option or install
-pkg-config." "$LINENO" 5
-fi
-
-
-
-
-
-
-
-  if ${ax_cv_have_PDB_REDO+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  save_CPPFLAGS="$CPPFLAGS"
-     save_LDFLAGS="$LDFLAGS"
-     save_LIBS="$LIBS"
-
-     if test "x$PDB_REDO_CPPFLAGS" != "x"; then :
-  CPPFLAGS="$CPPFLAGS $PDB_REDO_CPPFLAGS"
-fi
-
-     if test "x$PDB_REDO_LDFLAGS" != "x"; then :
-  LDFLAGS="$LDFLAGS $PDB_REDO_LDFLAGS"
-fi
-
-     ac_fn_cxx_check_header_mongrel "$LINENO" "pdb-redo/Config.hpp" "ac_cv_header_pdb_redo_Config_hpp" "$ac_includes_default"
-if test "x$ac_cv_header_pdb_redo_Config_hpp" = xyes; then :
-
-       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lpdb-redo" >&5
-$as_echo_n "checking for main in -lpdb-redo... " >&6; }
-if ${ac_cv_lib_pdb_redo_main+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lpdb-redo  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main ()
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_cv_lib_pdb_redo_main=yes
-else
-  ac_cv_lib_pdb_redo_main=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pdb_redo_main" >&5
-$as_echo "$ac_cv_lib_pdb_redo_main" >&6; }
-if test "x$ac_cv_lib_pdb_redo_main" = xyes; then :
-  ax_cv_have_PDB_REDO=yes
-else
-  ax_cv_have_PDB_REDO=no
-fi
-
-
-else
-  ax_cv_have_PDB_REDO=no
-fi
-
-
-
-     CPPFLAGS="$save_CPPFLAGS"
-     LDFLAGS="$save_LDFLAGS"
-     LIBS="$save_LIBS"
-
-fi
-
-
-  if test "$ax_cv_have_PDB_REDO" = "yes"; then :
-
-$as_echo "#define HAVE_PDB_REDO 1" >>confdefs.h
-
-
-				LIBS="-lpdb-redo $LIBS"
-
-else
-  as_fn_error $? "libpdb-redo not found" "$LINENO" 5
-fi
-
-	fi
-
-	if  test -f /usr/share/libpdb-redo/bond-info.bin ; then :
-  LIBPDB_REDO_DATA_DIR=/usr/share/libpdb-redo
-fi
-	if  test -f /usr/local/share/libpdb-redo/bond-info.bin ; then :
-  LIBPDB_REDO_DATA_DIR=/usr/local/share/libpdb-redo
-fi
-
-fi
-
-
-LIBPDB_REDO_DATA_DIR=$LIBPDB_REDO_DATA_DIR
-
 
 
 
@@ -8296,9 +8100,516 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 
-$as_echo "#define HAVE_CLIPPER 1" >>confdefs.h
+
+# Check whether --with-pdb-redo was given.
+if test "${with_pdb_redo+set}" = set; then :
+  withval=$with_pdb_redo;
+			if test -d ${withval}/include; then :
+
+else
+
+				as_fn_error $? "'${withval}'' is not a valid directory for --with-pdb-redo" "$LINENO" 5
+
+fi
+
+			PDB_REDO_CFLAGS="-I ${withval}/include"
+			PDB_REDO_LIBS="-L${withval}/.libs -lpdb-redo"
+			LIBPDB_REDO_DATA_DIR="${withval}/rsrc"
+
+			PDB_REDO_CFLAGS=$PDB_REDO_CFLAGS
+
+			PDB_REDO_LIBS=$PDB_REDO_LIBS
 
 
+fi
+
+
+if test "x$PDB_REDO_LIBS" = "x"; then :
+
+	if test -x "$PKG_CONFIG"
+	then
+
+
+
+
+    AX_PACKAGE_REQUIRES="$AX_PACKAGE_REQUIRES libpdb-redo"
+    AX_PACKAGE_REQUIRES_PRIVATE="$AX_PACKAGE_REQUIRES_PRIVATE "
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for PDB_REDO" >&5
+$as_echo_n "checking for PDB_REDO... " >&6; }
+
+if test -n "$PDB_REDO_CFLAGS"; then
+    pkg_cv_PDB_REDO_CFLAGS="$PDB_REDO_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpdb-redo \""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libpdb-redo ") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_PDB_REDO_CFLAGS=`$PKG_CONFIG --cflags "libpdb-redo " 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$PDB_REDO_LIBS"; then
+    pkg_cv_PDB_REDO_LIBS="$PDB_REDO_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpdb-redo \""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libpdb-redo ") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_PDB_REDO_LIBS=`$PKG_CONFIG --libs "libpdb-redo " 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        PDB_REDO_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpdb-redo " 2>&1`
+        else
+	        PDB_REDO_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpdb-redo " 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$PDB_REDO_PKG_ERRORS" >&5
+
+	as_fn_error $? "the required package libpdb-redo is not installed" "$LINENO" 5
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	as_fn_error $? "the required package libpdb-redo is not installed" "$LINENO" 5
+else
+	PDB_REDO_CFLAGS=$pkg_cv_PDB_REDO_CFLAGS
+	PDB_REDO_LIBS=$pkg_cv_PDB_REDO_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+    # Substitute output.
+
+
+
+		LIBPDB_REDO_DATA_DIR=$(pkg-config --variable=datalibdir libpdb-redo)
+	else
+		ac_fn_cxx_check_header_mongrel "$LINENO" "pdb-redo/Config.hpp" "ac_cv_header_pdb_redo_Config_hpp" "$ac_includes_default"
+if test "x$ac_cv_header_pdb_redo_Config_hpp" = xyes; then :
+
+
+else
+  as_fn_error $? "
+Can't find the libpdb-redo header, Config.hpp.  Make sure that it
+is installed, and either use the --with-pdb-redo option or install
+pkg-config." "$LINENO" 5
+fi
+
+
+
+
+
+
+
+  if ${ax_cv_have_PDB_REDO+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  save_CPPFLAGS="$CPPFLAGS"
+     save_LDFLAGS="$LDFLAGS"
+     save_LIBS="$LIBS"
+
+     if test "x$PDB_REDO_CPPFLAGS" != "x"; then :
+  CPPFLAGS="$CPPFLAGS $PDB_REDO_CPPFLAGS"
+fi
+
+     if test "x$PDB_REDO_LDFLAGS" != "x"; then :
+  LDFLAGS="$LDFLAGS $PDB_REDO_LDFLAGS"
+fi
+
+     ac_fn_cxx_check_header_mongrel "$LINENO" "pdb-redo/Config.hpp" "ac_cv_header_pdb_redo_Config_hpp" "$ac_includes_default"
+if test "x$ac_cv_header_pdb_redo_Config_hpp" = xyes; then :
+
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lpdb-redo" >&5
+$as_echo_n "checking for main in -lpdb-redo... " >&6; }
+if ${ac_cv_lib_pdb_redo_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpdb-redo  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_pdb_redo_main=yes
+else
+  ac_cv_lib_pdb_redo_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pdb_redo_main" >&5
+$as_echo "$ac_cv_lib_pdb_redo_main" >&6; }
+if test "x$ac_cv_lib_pdb_redo_main" = xyes; then :
+  ax_cv_have_PDB_REDO=yes
+else
+  ax_cv_have_PDB_REDO=no
+fi
+
+
+else
+  ax_cv_have_PDB_REDO=no
+fi
+
+
+
+     CPPFLAGS="$save_CPPFLAGS"
+     LDFLAGS="$save_LDFLAGS"
+     LIBS="$save_LIBS"
+
+fi
+
+
+  if test "$ax_cv_have_PDB_REDO" = "yes"; then :
+
+$as_echo "#define HAVE_PDB_REDO 1" >>confdefs.h
+
+
+				LIBS="-lpdb-redo $LIBS"
+
+else
+  as_fn_error $? "libpdb-redo not found" "$LINENO" 5
+fi
+
+		if  test -f /usr/share/libpdb-redo/bond-info.bin ; then :
+  LIBPDB_REDO_DATA_DIR=/usr/share/libpdb-redo
+fi
+		if  test -f /usr/local/share/libpdb-redo/bond-info.bin ; then :
+  LIBPDB_REDO_DATA_DIR=/usr/local/share/libpdb-redo
+fi
+	fi
+
+fi
+
+
+LIBPDB_REDO_DATA_DIR=$LIBPDB_REDO_DATA_DIR
+
+
+
+
+
+
+
+  if ${ax_cv_have_DLIB+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  save_CPPFLAGS="$CPPFLAGS"
+     save_LDFLAGS="$LDFLAGS"
+     save_LIBS="$LIBS"
+
+     if test "x$DLIB_CPPFLAGS" != "x"; then :
+  CPPFLAGS="$CPPFLAGS $DLIB_CPPFLAGS"
+fi
+
+     if test "x$DLIB_LDFLAGS" != "x"; then :
+  LDFLAGS="$LDFLAGS $DLIB_LDFLAGS"
+fi
+
+     ac_fn_cxx_check_header_mongrel "$LINENO" "dlib/global_optimization.h" "ac_cv_header_dlib_global_optimization_h" "$ac_includes_default"
+if test "x$ac_cv_header_dlib_global_optimization_h" = xyes; then :
+
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -ldlib" >&5
+$as_echo_n "checking for main in -ldlib... " >&6; }
+if ${ac_cv_lib_dlib_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ldlib  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_dlib_main=yes
+else
+  ac_cv_lib_dlib_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dlib_main" >&5
+$as_echo "$ac_cv_lib_dlib_main" >&6; }
+if test "x$ac_cv_lib_dlib_main" = xyes; then :
+  ax_cv_have_DLIB=yes
+else
+  ax_cv_have_DLIB=no
+fi
+
+
+else
+  ax_cv_have_DLIB=no
+fi
+
+
+
+     CPPFLAGS="$save_CPPFLAGS"
+     LDFLAGS="$save_LDFLAGS"
+     LIBS="$save_LIBS"
+
+fi
+
+
+  if test "$ax_cv_have_DLIB" = "yes"; then :
+
+$as_echo "#define HAVE_DLIB 1" >>confdefs.h
+
+
+			HAVE_DLIB=1
+			DLIB_LIBS="-ldlib $LIBS"
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libdlib-dev not found" >&5
+$as_echo "$as_me: WARNING: libdlib-dev not found" >&2;}
+fi
+
+
+
+DLIB_LIBS=$DLIB_LIBS
+
+
+if test -x "$PKG_CONFIG"
+then
+
+
+
+
+    AX_PACKAGE_REQUIRES="$AX_PACKAGE_REQUIRES newuoa"
+    AX_PACKAGE_REQUIRES_PRIVATE="$AX_PACKAGE_REQUIRES_PRIVATE "
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for NEWUOA" >&5
+$as_echo_n "checking for NEWUOA... " >&6; }
+
+if test -n "$NEWUOA_CFLAGS"; then
+    pkg_cv_NEWUOA_CFLAGS="$NEWUOA_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"newuoa \""; } >&5
+  ($PKG_CONFIG --exists --print-errors "newuoa ") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_NEWUOA_CFLAGS=`$PKG_CONFIG --cflags "newuoa " 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$NEWUOA_LIBS"; then
+    pkg_cv_NEWUOA_LIBS="$NEWUOA_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"newuoa \""; } >&5
+  ($PKG_CONFIG --exists --print-errors "newuoa ") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_NEWUOA_LIBS=`$PKG_CONFIG --libs "newuoa " 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        NEWUOA_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "newuoa " 2>&1`
+        else
+	        NEWUOA_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "newuoa " 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$NEWUOA_PKG_ERRORS" >&5
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: the required package libnewuoa-dev is not installed" >&5
+$as_echo "$as_me: WARNING: the required package libnewuoa-dev is not installed" >&2;}
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: the required package libnewuoa-dev is not installed" >&5
+$as_echo "$as_me: WARNING: the required package libnewuoa-dev is not installed" >&2;}
+else
+	NEWUOA_CFLAGS=$pkg_cv_NEWUOA_CFLAGS
+	NEWUOA_LIBS=$pkg_cv_NEWUOA_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+		HAVE_NEWUOA=1
+		$as_echo "#define HAVE_NEWUOA 1" >>confdefs.h
+
+
+fi
+
+    # Substitute output.
+
+
+
+else
+	ac_fn_cxx_check_header_mongrel "$LINENO" "newuoa.h" "ac_cv_header_newuoa_h" "$ac_includes_default"
+if test "x$ac_cv_header_newuoa_h" = xyes; then :
+
+else
+  as_fn_error $? "
+Can't find the libcif++ header, Config.hpp.  Make sure that it
+is installed, and either use the --with-cif++ option or install
+pkg-config." "$LINENO" 5
+fi
+
+
+
+
+
+
+
+  if ${ax_cv_have_NEWUOA+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  save_CPPFLAGS="$CPPFLAGS"
+     save_LDFLAGS="$LDFLAGS"
+     save_LIBS="$LIBS"
+
+     if test "x$NEWUOA_CPPFLAGS" != "x"; then :
+  CPPFLAGS="$CPPFLAGS $NEWUOA_CPPFLAGS"
+fi
+
+     if test "x$NEWUOA_LDFLAGS" != "x"; then :
+  LDFLAGS="$LDFLAGS $NEWUOA_LDFLAGS"
+fi
+
+     ac_fn_cxx_check_header_mongrel "$LINENO" "newuoa.h" "ac_cv_header_newuoa_h" "$ac_includes_default"
+if test "x$ac_cv_header_newuoa_h" = xyes; then :
+
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lnewuoa" >&5
+$as_echo_n "checking for main in -lnewuoa... " >&6; }
+if ${ac_cv_lib_newuoa_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lnewuoa  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_newuoa_main=yes
+else
+  ac_cv_lib_newuoa_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_newuoa_main" >&5
+$as_echo "$ac_cv_lib_newuoa_main" >&6; }
+if test "x$ac_cv_lib_newuoa_main" = xyes; then :
+  ax_cv_have_NEWUOA=yes
+else
+  ax_cv_have_NEWUOA=no
+fi
+
+
+else
+  ax_cv_have_NEWUOA=no
+fi
+
+
+
+     CPPFLAGS="$save_CPPFLAGS"
+     LDFLAGS="$save_LDFLAGS"
+     LIBS="$save_LIBS"
+
+fi
+
+
+  if test "$ax_cv_have_NEWUOA" = "yes"; then :
+
+$as_echo "#define HAVE_NEWUOA 1" >>confdefs.h
+
+
+			LIBS="-lnewuoa $LIBS"
+			HAVE_NEWUOA=1
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libnewuoa not found" >&5
+$as_echo "$as_me: WARNING: libnewuoa not found" >&2;}
+fi
+
+fi
+
+if  test "x${HAVE_DLIB}" = "x" && test "x${HAVE_NEWUOA}" = "x" ; then :
+
+	as_fn_error $? "Either libnewuoa-dev or libdlib-dev should be installed" "$LINENO" 5
+
+fi
 
 
 

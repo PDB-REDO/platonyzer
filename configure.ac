@@ -36,6 +36,7 @@ AC_ARG_VAR([DEBUG], [Build a debug version of the application])
 
 AC_ARG_VAR([MRC], [Specify a location for the mrc executable])
 
+dnl using resources?
 USE_RSRC=0
 
 if test "x$MRC" = "x"; then
@@ -47,7 +48,7 @@ if test "x$MRC" = "x"; then
 else
 	AC_ARG_ENABLE(
 		resources,
-		[AS_HELP_STRING([--disable-resources], [Use mrc to store data in resources])])
+		[AS_HELP_STRING([--disable-resources], [Do not use mrc to store data in resources])])
 
 	AS_IF([test "x$enable_resources" != "xno" ], [
 		USE_RSRC=1
@@ -91,8 +92,8 @@ AC_TRY_LINK(
 )
 
 AX_BOOST_BASE([1.65.1], [], [AC_MSG_ERROR([Could not find a recent version of boost])])
-AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_IOSTREAMS
+AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_DATE_TIME
 AX_BOOST_REGEX
 
@@ -108,8 +109,6 @@ AC_ARG_WITH([cif++],
 			AS_IF([test -d ${withval}/include], [], [
 				AC_MSG_ERROR(['${withval}'' is not a valid directory for --with-cif++])
 			])
-			dnl AC_SUBST([CIFPP_CFLAGS], ["-I ${withval}/include"])
-			dnl AC_SUBST([CIFPP_LIBS], ["-L${withval}/.libs -lcif++"])
 
 			CIFPP_CFLAGS="-I ${withval}/include"
 			CIFPP_LIBS="-L${withval}/.libs -lcifpp"
@@ -123,9 +122,10 @@ AS_IF([test "x$CIFPP_LIBS" = "x"], [
 	if test -x "$PKG_CONFIG"
 	then
 		AX_PKG_CHECK_MODULES([CIFPP], [libcifpp], [], [], [AC_MSG_ERROR([the required package libcif++ is not installed])])
+		LIBCIFPP_DATA_DIR=$(pkg-config --variable=datalibdir libcifpp)
 	else
 		AC_CHECK_HEADER(
-	        [cif++/Config.hpp],
+	        [cif++/Cif++.hpp],
 	        [
 				dnl CIFPP_CFLAGS="-I ${withval}/include"
 			],
@@ -134,14 +134,14 @@ Can't find the libcif++ header, Config.hpp.  Make sure that it
 is installed, and either use the --with-cif++ option or install
 pkg-config.])])
 
-		AX_CHECK_LIBRARY([CIFPP], [cif++/Config.hpp], [cifpp],
+		AX_CHECK_LIBRARY([CIFPP], [cif++/Cif++.hpp], [cifpp],
 			[
 				LIBS="-lcifpp $LIBS"
 			],
 			[AC_MSG_ERROR([libcif++ not found])])
+		AS_IF([ test -f /usr/local/share/libcifpp/mmcif_pdbx_v50.dic.gz ], [LIBCIFPP_DATA_DIR=/usr/local/share/libcifpp/ ])
+		AS_IF([ test -f /var/cache/libcifpp/mmcif_pdbx_v50.dic.gz ], [LIBCIFPP_DATA_DIR=/var/cache/libcifpp ])
 	fi
-
-	AS_IF([ test -f /var/cache/libcifpp/mmcif_pdbx_v50.dic ], [LIBCIFPP_DATA_DIR=/var/cache/libcifpp ])
 ])
 
 AC_ARG_VAR([LIBCIFPP_DATA_DIR], [Directory containing mmcif_pdbx_v50.dic file])
@@ -183,56 +183,6 @@ pkg-config.])])
 	fi
 ])
 
-dnl Check for libpdb-redo
-
-AC_ARG_WITH([pdb-redo],
-	AS_HELP_STRING([--with-pdb-redo=@<:@location@:>@],
-		[Use the pdb-redo library as specified.]),
-		[
-			AS_IF([test -d ${withval}/include], [], [
-				AC_MSG_ERROR(['${withval}'' is not a valid directory for --with-pdb-redo])
-			])
-			dnl AC_SUBST([PDB_REDO_CFLAGS], ["-I ${withval}/include"])
-			dnl AC_SUBST([PDB_REDO_LIBS], ["-L${withval}/.libs -lpdb-redo"])
-
-			PDB_REDO_CFLAGS="-I ${withval}/include"
-			PDB_REDO_LIBS="-L${withval}/.libs -lpdb-redo"
-			LIBPDB_REDO_DATA_DIR="${withval}/rsrc"
-
-			AC_SUBST([PDB_REDO_CFLAGS], [$PDB_REDO_CFLAGS])
-			AC_SUBST([PDB_REDO_LIBS], [$PDB_REDO_LIBS])
-		])
-
-AS_IF([test "x$PDB_REDO_LIBS" = "x"], [
-	if test -x "$PKG_CONFIG"
-	then
-		AX_PKG_CHECK_MODULES([PDB_REDO], [libpdb-redo], [], [], [AC_MSG_ERROR([the required package libpdb-redo is not installed])])
-	else
-		AC_CHECK_HEADER(
-	        [pdb-redo/Config.hpp],
-	        [
-				dnl PDB_REDO_CFLAGS="-I ${withval}/include"
-			],
-			[AC_MSG_ERROR([
-Can't find the libpdb-redo header, Config.hpp.  Make sure that it
-is installed, and either use the --with-pdb-redo option or install
-pkg-config.])])
-
-		AX_CHECK_LIBRARY([PDB_REDO], [pdb-redo/Config.hpp], [pdb-redo],
-			[
-				LIBS="-lpdb-redo $LIBS"
-			],
-			[AC_MSG_ERROR([libpdb-redo not found])])
-	fi
-
-	AS_IF([ test -f /usr/share/libpdb-redo/bond-info.bin ], [LIBPDB_REDO_DATA_DIR=/usr/share/libpdb-redo])
-	AS_IF([ test -f /usr/local/share/libpdb-redo/bond-info.bin ], [LIBPDB_REDO_DATA_DIR=/usr/local/share/libpdb-redo])
-])
-
-AC_ARG_VAR([LIBPDB_REDO_DATA_DIR], [Directory containing bond-info.bin file])
-AC_SUBST([LIBPDB_REDO_DATA_DIR], [$LIBPDB_REDO_DATA_DIR])
-
-dnl Check for libclipper
 AC_ARG_VAR([CCP4], [The location where CCP4 is installed])
 
 AS_IF([test x"$CCP4" != x""],
@@ -301,8 +251,93 @@ AC_COMPILE_IFELSE(
 	[AC_MSG_RESULT([ok])],
 	[AC_MSG_ERROR([The version of clipper is not up to date])])
 
-AC_DEFINE([HAVE_CLIPPER], [1], [Use libclipper])
+dnl Check for libpdb-redo
 
+AC_ARG_WITH([pdb-redo],
+	AS_HELP_STRING([--with-pdb-redo=@<:@location@:>@],
+		[Use the pdb-redo library as specified.]),
+		[
+			AS_IF([test -d ${withval}/include], [], [
+				AC_MSG_ERROR(['${withval}'' is not a valid directory for --with-pdb-redo])
+			])
+			dnl AC_SUBST([PDB_REDO_CFLAGS], ["-I ${withval}/include"])
+			dnl AC_SUBST([PDB_REDO_LIBS], ["-L${withval}/.libs -lpdb-redo"])
+
+			PDB_REDO_CFLAGS="-I ${withval}/include"
+			PDB_REDO_LIBS="-L${withval}/.libs -lpdb-redo"
+			LIBPDB_REDO_DATA_DIR="${withval}/rsrc"
+
+			AC_SUBST([PDB_REDO_CFLAGS], [$PDB_REDO_CFLAGS])
+			AC_SUBST([PDB_REDO_LIBS], [$PDB_REDO_LIBS])
+		])
+
+AS_IF([test "x$PDB_REDO_LIBS" = "x"], [
+	if test -x "$PKG_CONFIG"
+	then
+		AX_PKG_CHECK_MODULES([PDB_REDO], [libpdb-redo], [], [], [AC_MSG_ERROR([the required package libpdb-redo is not installed])])
+		LIBPDB_REDO_DATA_DIR=$(pkg-config --variable=datalibdir libpdb-redo)
+	else
+		AC_CHECK_HEADER(
+	        [pdb-redo/Config.hpp],
+	        [
+				dnl PDB_REDO_CFLAGS="-I ${withval}/include"
+			],
+			[AC_MSG_ERROR([
+Can't find the libpdb-redo header, Config.hpp.  Make sure that it
+is installed, and either use the --with-pdb-redo option or install
+pkg-config.])])
+
+		AX_CHECK_LIBRARY([PDB_REDO], [pdb-redo/Config.hpp], [pdb-redo],
+			[
+				LIBS="-lpdb-redo $LIBS"
+			],
+			[AC_MSG_ERROR([libpdb-redo not found])])
+		AS_IF([ test -f /usr/share/libpdb-redo/bond-info.bin ], [LIBPDB_REDO_DATA_DIR=/usr/share/libpdb-redo])
+		AS_IF([ test -f /usr/local/share/libpdb-redo/bond-info.bin ], [LIBPDB_REDO_DATA_DIR=/usr/local/share/libpdb-redo])
+	fi
+])
+
+AC_ARG_VAR([LIBPDB_REDO_DATA_DIR], [Directory containing bond-info.bin file])
+AC_SUBST([LIBPDB_REDO_DATA_DIR], [$LIBPDB_REDO_DATA_DIR])
+
+dnl fftw libraries
+dnl AX_CHECK_LIBRARY([FFTW], [fftw.h], [fftw], [ LIBS="-lfftw $LIBS" ])
+dnl AX_CHECK_LIBRARY([RFFTW], [rfftw.h], [rfftw], [ LIBS="-lrfftw $LIBS" ])
+
+AX_CHECK_LIBRARY([DLIB], [dlib/global_optimization.h], [dlib],
+		[
+			HAVE_DLIB=1
+			DLIB_LIBS="-ldlib $LIBS"
+		],
+		[AC_MSG_WARN([libdlib-dev not found])])
+
+AC_SUBST([DLIB_CFLAGS], [])
+AC_SUBST([DLIB_LIBS], [$DLIB_LIBS])
+
+if test -x "$PKG_CONFIG"
+then
+	AX_PKG_CHECK_MODULES([NEWUOA], [newuoa], [], [
+		HAVE_NEWUOA=1
+		AC_DEFINE([HAVE_NEWUOA], [1])
+	], [AC_MSG_WARN([the required package libnewuoa-dev is not installed])])
+else
+	AC_CHECK_HEADER(
+		[newuoa.h], [], [AC_MSG_ERROR([
+Can't find the libcif++ header, Config.hpp.  Make sure that it
+is installed, and either use the --with-cif++ option or install
+pkg-config.])])
+
+	AX_CHECK_LIBRARY([NEWUOA], [newuoa.h], [newuoa],
+		[
+			LIBS="-lnewuoa $LIBS"
+			HAVE_NEWUOA=1
+		],
+		[AC_MSG_WARN([libnewuoa not found])])
+fi
+
+AS_IF([ test "x${HAVE_DLIB}" = "x" && test "x${HAVE_NEWUOA}" = "x" ], [
+	AC_MSG_ERROR([Either libnewuoa-dev or libdlib-dev should be installed])
+])
 dnl These are still needed outside the Debian environment
 AX_CHECK_LIBRARY([LIBZ], [zlib.h], [z],
 	[ LIBS="$LIBS -lz" ],
