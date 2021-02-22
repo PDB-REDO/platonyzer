@@ -61,7 +61,7 @@ PROGRAM				= @PACKAGE_NAME@
 
 VERSION				= @PACKAGE_VERSION@
 
-SEARCH_PATHS		= src test @LIBCIFPP_DATA_DIR@ @LIBPDB_REDO_DATA_DIR@
+SEARCH_PATHS		= src test rsrc @LIBCIFPP_DATA_DIR@ @LIBPDB_REDO_DATA_DIR@
 
 OBJECTS				= $(PROGRAM).o
 
@@ -133,6 +133,12 @@ endif
 ifneq "$(USE_RSRC)" "0"
 
 OBJECTS += $(PROGRAM)_rsrc.o
+
+rsrc:
+	mkdir -p $@
+
+rsrc/%.dic: %.dic.gz | rsrc
+	gunzip -c $^ > $@
 
 $(OBJDIR)/$(PROGRAM)_rsrc.o: $(RESOURCES)
 	$(MRC) -o $@ $^
