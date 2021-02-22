@@ -1,12 +1,21 @@
 AC_PREREQ([2.69])
 
-AC_INIT([platonyzer], 2.0, [m.hekkelman@nki.nl])
+m4_define([platonyzer_version_major],[2])
+m4_define([platonyzer_version_minor],[0])
+m4_define([platonyzer_version_micro],[0])
+m4_define([platonyzer_version_extra],[])
+m4_define([platonyzer_version],[platonyzer_version_major().platonyzer_version_minor().platonyzer_version_micro()platonyzer_version_extra])
+
+AC_INIT([platonyzer], [platonyzer_version], [m.hekkelman@nki.nl])
 
 dnl Switch to a decent C++ compiler, and check if it works.
 AC_LANG(C++)
 AX_CXX_COMPILE_STDCXX_17([noext])
 
-AX_CHECK_COMPILE_FLAG([-fstandalone-debug], [ CXXFLAGS="$CXXFLAGS -fstandalone-debug" ], , [-Werror])
+AX_CHECK_COMPILE_FLAG([-fstandalone-debug],
+	[
+		CXXFLAGS="$CXXFLAGS -fstandalone-debug"
+	] , , [-Werror])
 
 AC_CONFIG_SRCDIR([src/platonyzer.cpp])
 AC_CONFIG_AUX_DIR(config)
@@ -149,7 +158,7 @@ AC_ARG_WITH([zeep],
 			])
 
 			ZEEP_CFLAGS="-I ${withval}/include"
-			ZEEP_LIBS="-L${withval}/.libs -lzeep-json"
+			ZEEP_LIBS="-L${withval}/.libs -lzeep"
 
 			AC_SUBST([ZEEP_CFLAGS], [$ZEEP_CFLAGS])
 			AC_SUBST([ZEEP_LIBS], [$ZEEP_LIBS])
@@ -169,7 +178,7 @@ is installed, and either use the --with-zeep option or install
 pkg-config.])])
 
 		AX_CHECK_LIBRARY([ZEEP], [zeep/json/element.hpp], [zeep],
-			[ LIBS="-lzeep-json $LIBS" ],
+			[ LIBS="-lzeep $LIBS" ],
 			[AC_MSG_ERROR([libzeep not found])])
 	fi
 ])
