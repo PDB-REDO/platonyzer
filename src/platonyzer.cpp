@@ -26,15 +26,15 @@
 
 #include "config.hpp"
 
-#include <iomanip>
-#include <fstream>
 #include <filesystem>
+#include <fstream>
+#include <iomanip>
 #include <unordered_set>
 
-#include <boost/program_options.hpp>
-#include <boost/iostreams/concepts.hpp>    // output_filter
-#include <boost/iostreams/operations.hpp>  // put
+#include <boost/iostreams/concepts.hpp> // output_filter
 #include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/operations.hpp> // put
+#include <boost/program_options.hpp>
 
 #include "cif++/Cif++.hpp"
 #include "cif++/Compound.hpp"
@@ -53,8 +53,7 @@ namespace c = mmcif;
 // -----------------------------------------------------------------------
 
 const std::set<std::string> kBackBone = {
-	"N", "CA", "C", "O", "OXT"
-};
+	"N", "CA", "C", "O", "OXT"};
 
 const float
 	kMaxZnHisDistanceInCluster = 3.8f,
@@ -81,30 +80,29 @@ const float
 class RestraintGenerator
 {
   public:
-
-	RestraintGenerator(const std::string& file, bool deleteVDWRestraints)
-		: m_file_file(file), m_deleteVDWRestraints(deleteVDWRestraints)
+	RestraintGenerator(const std::string &file, bool deleteVDWRestraints)
+		: m_file_file(file)
+		, m_deleteVDWRestraints(deleteVDWRestraints)
 	{
 		if (not m_file_file.is_open())
 			throw std::runtime_error("Could not open restraint file " + file);
-		
+
 		m_file.push(unique_filter());
 		m_file.push(m_file_file);
 	}
 
 	~RestraintGenerator() = default;
 
-	std::size_t writeTetrahedral(const c::Atom& ion, const std::vector<c::Atom>& ligands);
-	std::size_t writeOctahedral(const c::Atom& ion, const std::vector<c::Atom>& ligands,
-		const std::vector<std::tuple<std::size_t,std::size_t>>& opposing);
+	std::size_t writeTetrahedral(const c::Atom &ion, const std::vector<c::Atom> &ligands);
+	std::size_t writeOctahedral(const c::Atom &ion, const std::vector<c::Atom> &ligands,
+		const std::vector<std::tuple<std::size_t, std::size_t>> &opposing);
 
   private:
-
 	class unique_filter : public io::output_filter
 	{
 	  public:
-		template<typename Sink>
-		bool put(Sink& dest, int c)
+		template <typename Sink>
+		bool put(Sink &dest, int c)
 		{
 			bool result = true;
 
@@ -112,7 +110,7 @@ class RestraintGenerator
 			{
 				if (m_seen.insert(m_line).second)
 				{
-					for (char ch: m_line)
+					for (char ch : m_line)
 						io::put(dest, ch);
 					result = io::put(dest, c);
 				}
@@ -121,32 +119,34 @@ class RestraintGenerator
 			}
 			else
 				m_line += c;
-			
+
 			return result;
 		}
 
-		template<typename Sink>
-		void close(Sink&)
+		template <typename Sink>
+		void close(Sink &)
 		{
 			m_line.clear();
 			m_seen.clear();
 		}
 
 	  private:
-		
 		std::string m_line;
 		std::unordered_set<std::string> m_seen;
 	};
 
-	void writeAngleRestraint(float target, float sd, const c::Atom& a, const c::Atom& b, const c::Atom& c);
+	void writeAngleRestraint(float target, float sd, const c::Atom &a, const c::Atom &b, const c::Atom &c);
 
 	struct AtomPart
 	{
-		const c::Atom& m_a;
+		const c::Atom &m_a;
 
-		AtomPart(const c::Atom& a) : m_a(a) {}
+		AtomPart(const c::Atom &a)
+			: m_a(a)
+		{
+		}
 
-		friend std::ostream& operator<<(std::ostream& os, const AtomPart& aw)
+		friend std::ostream &operator<<(std::ostream &os, const AtomPart &aw)
 		{
 			os << "chain " << aw.m_a.authAsymID()
 			   << " resi " << aw.m_a.authSeqID()
@@ -167,7 +167,7 @@ class RestraintGenerator
 	bool m_deleteVDWRestraints;
 };
 
-std::size_t RestraintGenerator::writeTetrahedral(const c::Atom& ion, const std::vector<c::Atom>& ligands)
+std::size_t RestraintGenerator::writeTetrahedral(const c::Atom &ion, const std::vector<c::Atom> &ligands)
 {
 	const float
 		kTarget = 109.5,
@@ -186,13 +186,17 @@ std::size_t RestraintGenerator::writeTetrahedral(const c::Atom& ion, const std::
 	return n;
 }
 
-std::size_t RestraintGenerator::writeOctahedral(const c::Atom& ion, const std::vector<c::Atom>& ligands,
-	const std::vector<std::tuple<std::size_t,std::size_t>>& opposing)
+std::size_t RestraintGenerator::writeOctahedral(const c::Atom &ion, const std::vector<c::Atom> &ligands,
+	const std::vector<std::tuple<std::size_t, std::size_t>> &opposing)
 {
 	const float kSD = 3;
 
 	if (m_deleteVDWRestraints)
 		m_file << "vdwr exclude " << AtomPart(ion) << std::endl;
+
+	std::set<std::size_t> one_side_ligand;
+	for (const auto& [a, b]: opposing)
+		one_side_ligand.insert(a);
 
 	std::size_t n = 0, ai = 0;
 	for (auto a = ligands.begin(); std::next(a) != ligands.end(); ++a, ++ai)
@@ -200,10 +204,21 @@ std::size_t RestraintGenerator::writeOctahedral(const c::Atom& ion, const std::v
 		std::size_t bi = ai + 1;
 		for (auto b = a + 1; b != ligands.end(); ++b, ++bi)
 		{
-			if (find(opposing.begin(), opposing.end(), std::make_tuple(ai, bi)) == opposing.end())
-				writeAngleRestraint(90, kSD, *a, ion, *b);
-			else
+			if (find(opposing.begin(), opposing.end(), std::make_tuple(ai, bi)) != opposing.end())
+			{
 				writeAngleRestraint(180, kSD, *a, ion, *b);
+
+				for (auto &c : ligands)
+				{
+					if (c == *a or c == *b)
+						continue;
+
+					writeAngleRestraint(90, kSD, *a, c, *b);
+				}
+			}
+			else if (one_side_ligand.count(ai) and one_side_ligand.count(bi))
+				writeAngleRestraint(90, kSD, *a, ion, *b);
+
 			++n;
 		}
 	}
@@ -211,7 +226,7 @@ std::size_t RestraintGenerator::writeOctahedral(const c::Atom& ion, const std::v
 	return n;
 }
 
-void RestraintGenerator::writeAngleRestraint(float target, float sd, const c::Atom& a, const c::Atom& b, const c::Atom& c)
+void RestraintGenerator::writeAngleRestraint(float target, float sd, const c::Atom &a, const c::Atom &b, const c::Atom &c)
 {
 	m_file << "exte angle first " << AtomPart(a) << " next " << AtomPart(b) << " next " << AtomPart(c)
 		   << std::fixed << std::setprecision(3) << " value " << target << " sigma " << sd << std::endl;
@@ -222,8 +237,8 @@ void RestraintGenerator::writeAngleRestraint(float target, float sd, const c::At
 struct IonSite
 {
 	c::Atom ion;
-	std::vector<std::tuple<c::Atom,float,std::string>> lig;
-	std::vector<std::tuple<std::size_t,std::size_t>> opposing;
+	std::vector<std::tuple<c::Atom, float, std::string>> lig;
+	std::vector<std::tuple<std::size_t, std::size_t>> opposing;
 
 	bool isOctaHedral();
 };
@@ -237,15 +252,15 @@ bool IonSite::isOctaHedral()
 	// check angles
 	for (std::size_t a = 0; result and a + 1 < 6; ++a)
 	{
-		auto& la = std::get<0>(lig[a]);
+		auto &la = std::get<0>(lig[a]);
 		std::size_t opposing_la = 0;
 
 		for (std::size_t b = a + 1; result and b < 6; ++b)
 		{
-			auto& lb = std::get<0>(lig[b]);
+			auto &lb = std::get<0>(lig[b]);
 			float angle = c::Angle(la.location(), ion.location(), lb.location());
-			
-			if (abs(angle - 180) < kMaxAllowedAngleDeviation)	// opposing?
+
+			if (abs(angle - 180) < kMaxAllowedAngleDeviation) // opposing?
 			{
 				if (opposing_la++ > 0)
 					result = false;
@@ -262,8 +277,8 @@ bool IonSite::isOctaHedral()
 
 // -----------------------------------------------------------------------
 
-bool findZincSites(c::Structure& structure, cif::Datablock& db, int spacegroup, const clipper::Cell& cell,
-	IonSite& zs, const std::string& altID)
+bool findZincSites(c::Structure &structure, cif::Datablock &db, int spacegroup, const clipper::Cell &cell,
+	IonSite &zs, const std::string &altID)
 {
 	bool result = false;
 
@@ -273,27 +288,27 @@ bool findZincSites(c::Structure& structure, cif::Datablock& db, int spacegroup, 
 		if (not altID.empty())
 		{
 			zs.lig.erase(
-				std::remove_if(zs.lig.begin(), zs.lig.end(), [altID](auto& l)
-				{
+				std::remove_if(zs.lig.begin(), zs.lig.end(), [altID](auto &l) {
 					auto alt = std::get<0>(l).labelAltID();
 					return not alt.empty() and alt != altID;
-				}), zs.lig.end());
+				}),
+				zs.lig.end());
 		}
 
 		// sort ligands on distance
-		std::sort(zs.lig.begin(), zs.lig.end(), [](auto& a, auto& b) { return std::get<1>(a) < std::get<1>(b); });
+		std::sort(zs.lig.begin(), zs.lig.end(), [](auto &a, auto &b) { return std::get<1>(a) < std::get<1>(b); });
 
 		// take the nearest atom of a residue, this takes care of NE2/ND1 from a single HIS
 		// and also the alt cases
 		for (auto a = zs.lig.begin(); a != zs.lig.end() and std::next(a) != zs.lig.end(); ++a)
 		{
-			auto& aa = std::get<0>(*a);
+			auto &aa = std::get<0>(*a);
 
 			auto ad = std::get<1>(*a);
 
 			for (auto b = std::next(a); b != zs.lig.end(); ++b)
 			{
-				auto& ba = std::get<0>(*b);
+				auto &ba = std::get<0>(*b);
 
 				if (ba.labelCompID() != aa.labelCompID() or aa.labelSeqID() != ba.labelSeqID() or aa.labelAsymID() != ba.labelAsymID() or aa.symmetry() != ba.symmetry())
 					continue;
@@ -311,12 +326,12 @@ bool findZincSites(c::Structure& structure, cif::Datablock& db, int spacegroup, 
 		if (cif::VERBOSE)
 		{
 			std::cerr << "preliminary cluster: " << std::endl
-				 << " zn: " << zs.ion.labelAsymID() << '/' << zs.ion.labelAtomID() << " (" << zs.ion.pdbID() << ')' << std::endl;
+					  << " zn: " << zs.ion.labelAsymID() << '/' << zs.ion.labelAtomID() << " (" << zs.ion.pdbID() << ')' << std::endl;
 
-			for (auto& l: zs.lig)
+			for (auto &l : zs.lig)
 			{
-				auto& a = std::get<0>(l);
-				std::cerr << " " << a.labelAsymID() << a.labelSeqID() << '/' << a.labelAtomID() << " (" << a.pdbID() << ')'  << ' ' << a.symmetry() << " @ " << std::get<1>(l) << std::endl;
+				auto &a = std::get<0>(l);
+				std::cerr << " " << a.labelAsymID() << a.labelSeqID() << '/' << a.labelAtomID() << " (" << a.pdbID() << ')' << ' ' << a.symmetry() << " @ " << std::get<1>(l) << std::endl;
 			}
 		}
 
@@ -337,11 +352,11 @@ bool findZincSites(c::Structure& structure, cif::Datablock& db, int spacegroup, 
 
 			if (cif::VERBOSE)
 			{
-                for (std::size_t i = 4; i < zs.lig.size(); ++i)
-                {
-                    auto& a = std::get<0>(zs.lig[i]);
-                    std::cerr << "Atom " << a.labelAsymID() << a.labelSeqID() << '/' << a.labelAtomID() << " (" << a.pdbID() << ')'  << " was considered to be an outlier" << std::endl;
-                }
+				for (std::size_t i = 4; i < zs.lig.size(); ++i)
+				{
+					auto &a = std::get<0>(zs.lig[i]);
+					std::cerr << "Atom " << a.labelAsymID() << a.labelSeqID() << '/' << a.labelAtomID() << " (" << a.pdbID() << ')' << " was considered to be an outlier" << std::endl;
+				}
 			}
 
 			zs.lig.erase(zs.lig.begin() + 4, zs.lig.end());
@@ -358,27 +373,27 @@ bool findZincSites(c::Structure& structure, cif::Datablock& db, int spacegroup, 
 	return result;
 }
 
-std::vector<IonSite> findZincSites(c::Structure& structure, cif::Datablock& db, int spacegroup, const clipper::Cell& cell)
+std::vector<IonSite> findZincSites(c::Structure &structure, cif::Datablock &db, int spacegroup, const clipper::Cell &cell)
 {
 	std::vector<IonSite> result;
 
-    // factory for symmetry atom iterators
+	// factory for symmetry atom iterators
 	SymmetryAtomIteratorFactory saif(structure, spacegroup, cell);
 
-	for (auto atom: structure.atoms())
+	for (auto atom : structure.atoms())
 	{
-	 	if (atom.labelCompID() != "ZN")
-		 	continue;
+		if (atom.labelCompID() != "ZN")
+			continue;
 
 		atom.property("pdbx_formal_charge", 2);
 
-		IonSite zs = { atom };
+		IonSite zs = {atom};
 
-		for (auto a: structure.atoms())
+		for (auto a : structure.atoms())
 		{
 			if (a.labelCompID() == "HIS" and (a.labelAtomID() == "ND1" or a.labelAtomID() == "NE2"))
 			{
-				for (auto sa: saif(a, [al=atom.location()](const mmcif::Point& pt) { return Distance(al, pt) <= kMaxZnHisDistanceInCluster; }))
+				for (auto sa : saif(a, [al = atom.location()](const mmcif::Point &pt) { return Distance(al, pt) <= kMaxZnHisDistanceInCluster; }))
 				{
 					float d = Distance(atom, sa);
 					assert(d = kMaxZnHisDistanceInCluster);
@@ -389,7 +404,7 @@ std::vector<IonSite> findZincSites(c::Structure& structure, cif::Datablock& db, 
 
 			if (a.labelCompID() == "CYS" and a.labelAtomID() == "SG")
 			{
-				for (auto sa: saif(a, [al=atom.location()](const mmcif::Point& pt) { return Distance(al, pt) <= kMaxZnCysDistanceInCluster; }))
+				for (auto sa : saif(a, [al = atom.location()](const mmcif::Point &pt) { return Distance(al, pt) <= kMaxZnCysDistanceInCluster; }))
 				{
 					float d = Distance(atom, sa);
 					assert(d <= kMaxZnCysDistanceInCluster);
@@ -400,16 +415,16 @@ std::vector<IonSite> findZincSites(c::Structure& structure, cif::Datablock& db, 
 		}
 
 		std::set<std::string> altIDs;
-		for (const auto& [a, f, s]: zs.lig)
+		for (const auto &[a, f, s] : zs.lig)
 		{
 			if (not a.labelAltID().empty())
 				altIDs.insert(a.labelAltID());
 		}
-		
-		if (altIDs.empty())	// no alternates
+
+		if (altIDs.empty()) // no alternates
 			altIDs.insert("");
 
-		for (auto& alt: altIDs)
+		for (auto &alt : altIDs)
 		{
 			IonSite azs = zs;
 			if (findZincSites(structure, db, spacegroup, cell, azs, alt))
@@ -425,22 +440,22 @@ std::vector<IonSite> findZincSites(c::Structure& structure, cif::Datablock& db, 
 constexpr float get_t_90(std::size_t N)
 {
 	const float t_dist_90[] = {
-		1.638,	// 3
-		1.533,	// 4
-		1.476,	// 5
-		1.440,	// 6
-		1.415,	// 7
-		1.397,	// 8
-		1.383,	// 9
-		1.372,	// 10
+		1.638, // 3
+		1.533, // 4
+		1.476, // 5
+		1.440, // 6
+		1.415, // 7
+		1.397, // 8
+		1.383, // 9
+		1.372, // 10
 	};
 
 	assert(N >= 3 and N < sizeof(t_dist_90) / sizeof(float) + 3);
 	return t_dist_90[N - 3];
 }
 
-bool findOctahedralSites(c::Structure& structure, cif::Datablock& db, int spacegroup, const clipper::Cell& cell,
-	IonSite& is, const std::string& altID)
+bool findOctahedralSites(c::Structure &structure, cif::Datablock &db, int spacegroup, const clipper::Cell &cell,
+	IonSite &is, const std::string &altID)
 {
 	bool result = false;
 
@@ -450,25 +465,25 @@ bool findOctahedralSites(c::Structure& structure, cif::Datablock& db, int spaceg
 		if (not altID.empty())
 		{
 			is.lig.erase(
-				std::remove_if(is.lig.begin(), is.lig.end(), [altID](auto& l)
-				{
+				std::remove_if(is.lig.begin(), is.lig.end(), [altID](auto &l) {
 					auto alt = std::get<0>(l).labelAltID();
 					return not alt.empty() and alt != altID;
-				}), is.lig.end());
+				}),
+				is.lig.end());
 		}
 
 		// sort ligands on distance
-		sort(is.lig.begin(), is.lig.end(), [](auto& a, auto& b) { return std::get<1>(a) < std::get<1>(b); });
+		sort(is.lig.begin(), is.lig.end(), [](auto &a, auto &b) { return std::get<1>(a) < std::get<1>(b); });
 
 		// take the nearest atom of a residue, this takes care of NE2/ND1 from a single HIS
 		// and also the alt cases
 		for (auto a = is.lig.begin(); a != is.lig.end() and std::next(a) != is.lig.end(); ++a)
 		{
-			auto& aa = std::get<0>(*a);
+			auto &aa = std::get<0>(*a);
 
 			for (auto b = std::next(a); b != is.lig.end(); ++b)
 			{
-				auto& ba = std::get<0>(*b);
+				auto &ba = std::get<0>(*b);
 
 				// mmCIF...
 				if (aa.isWater())
@@ -491,24 +506,24 @@ bool findOctahedralSites(c::Structure& structure, cif::Datablock& db, int spaceg
 		if (cif::VERBOSE)
 		{
 			std::cerr << "preliminary cluster: " << std::endl
-					<< " metal: " << is.ion << std::endl;
+					  << " metal: " << is.ion << std::endl;
 
-			for (auto& l: is.lig)
+			for (auto &l : is.lig)
 			{
-				auto& a = std::get<0>(l);
+				auto &a = std::get<0>(l);
 				std::cerr << " " << a << ' ' << a.symmetry() << " @ " << std::get<1>(l) << std::endl;
 			}
 		}
 
 		// -----------------------------------------------------------------------
-		
+
 		for (auto a = is.lig.begin(); a != is.lig.end() and std::next(a) != is.lig.end(); ++a)
 		{
-			auto& aa = std::get<0>(*a);
+			auto &aa = std::get<0>(*a);
 
 			if (aa.type() != c::AtomType::N)
 				continue;
-				
+
 			try
 			{
 				if (aa.labelCompID() == "GLN")
@@ -517,25 +532,27 @@ bool findOctahedralSites(c::Structure& structure, cif::Datablock& db, int spaceg
 					auto o = structure.getAtomByLabel("OE1", aa.labelAsymID(), "GLN", aa.labelSeqID(), aa.labelAltID());
 
 					if (cif::VERBOSE)
-						std::cerr << "Flipping side chain for GLN " << " " << aa.labelAsymID() << aa.labelSeqID() << " (" << aa.pdbID() << ')' << std::endl;
+						std::cerr << "Flipping side chain for GLN "
+								  << " " << aa.labelAsymID() << aa.labelSeqID() << " (" << aa.pdbID() << ')' << std::endl;
 
 					structure.swapAtoms(aa, o);
 					continue;
 				}
-				
+
 				if (aa.labelCompID() == "ASN")
 				{
 					assert(aa.labelAtomID() == "ND2");
 					auto o = structure.getAtomByLabel("OD1", aa.labelAsymID(), "ASN", aa.labelSeqID(), aa.labelAltID());
 
 					if (cif::VERBOSE)
-						std::cerr << "Flipping side chain for ASN " << " " << aa.labelAsymID() << aa.labelSeqID() << " (" << aa.pdbID() << ')' << std::endl;
+						std::cerr << "Flipping side chain for ASN "
+								  << " " << aa.labelAsymID() << aa.labelSeqID() << " (" << aa.pdbID() << ')' << std::endl;
 
 					structure.swapAtoms(aa, o);
 					continue;
 				}
 			}
-			catch (const std::out_of_range& ex)
+			catch (const std::out_of_range &ex)
 			{
 				if (cif::VERBOSE)
 					std::cerr << "Could not flip " << aa.labelCompID() << ": " << ex.what() << std::endl;
@@ -554,28 +571,28 @@ bool findOctahedralSites(c::Structure& structure, cif::Datablock& db, int spaceg
 				std::cerr << "Rejecting cluster since the number of atoms is not reasonable" << std::endl;
 			break;
 		}
-		
+
 		// However, if we have more than six, try to remove outliers with a Grubbs test
 		// See: https://en.wikipedia.org/wiki/Grubbs%27s_test_for_outliers
 
 		while (is.lig.size() > 6)
 		{
-			double sum = accumulate(is.lig.begin(), is.lig.end(), 0.0, [](double s, auto& l) { return s + std::get<1>(l); });
+			double sum = accumulate(is.lig.begin(), is.lig.end(), 0.0, [](double s, auto &l) { return s + std::get<1>(l); });
 			double avg = sum / is.lig.size();
-			double stddev = sqrt(accumulate(is.lig.begin(), is.lig.end(), 0.0, [avg](double s, auto& l) { return s + (std::get<1>(l) - avg) * (std::get<1>(l) - avg); }) / (is.lig.size() - 1));
+			double stddev = sqrt(accumulate(is.lig.begin(), is.lig.end(), 0.0, [avg](double s, auto &l) { return s + (std::get<1>(l) - avg) * (std::get<1>(l) - avg); }) / (is.lig.size() - 1));
 
 			// only test if max distance is outlier
 			double G = (std::get<1>(is.lig.back()) - avg) / stddev;
 
 			// extracted from student t-distribution table, with one-sided confidence level 90%
-			// and degrees of freedom 
-			
+			// and degrees of freedom
+
 			if (G < get_t_90(is.lig.size()))
 				break;
-			
+
 			if (cif::VERBOSE)
 			{
-				auto& a = std::get<0>(is.lig.back());
+				auto &a = std::get<0>(is.lig.back());
 				std::cerr << "Removing outlier " << a.labelAsymID() << a.labelSeqID() << '/' << a.labelAtomID() << " (" << a.pdbID() << ')' << ' ' << a.symmetry() << " @ " << std::get<1>(is.lig.back()) << std::endl;
 			}
 
@@ -596,36 +613,36 @@ bool findOctahedralSites(c::Structure& structure, cif::Datablock& db, int spaceg
 	return result;
 }
 
-std::vector<IonSite> findOctahedralSites(c::Structure& structure, cif::Datablock& db, int spacegroup, const clipper::Cell& cell)
+std::vector<IonSite> findOctahedralSites(c::Structure &structure, cif::Datablock &db, int spacegroup, const clipper::Cell &cell)
 {
 	std::vector<IonSite> result;
 
-    // factory for symmetry atom iterators
+	// factory for symmetry atom iterators
 	SymmetryAtomIteratorFactory saif(structure, spacegroup, cell);
 
-	for (auto atom: structure.atoms())
+	for (auto atom : structure.atoms())
 	{
 		auto compID = atom.labelCompID();
 
-		if (compID == "NA" or compID == "K")	
+		if (compID == "NA" or compID == "K")
 			atom.property("pdbx_formal_charge", 1);
-		
+
 		if (compID == "CA" or compID == "MG")
 			atom.property("pdbx_formal_charge", 2);
 
-	 	if (compID != "NA" and compID != "MG")
-		 	continue;
+		if (compID != "NA" and compID != "MG")
+			continue;
 
-		IonSite is = { atom };
+		IonSite is = {atom};
 
-		for (auto a: structure.atoms())
+		for (auto a : structure.atoms())
 		{
 			if (a.type() == c::AtomType::S or
 				a.type() == c::AtomType::O or
 				a.type() == c::AtomType::N)
 			{
 				// for (auto sa: saif(a))
-				for (auto sa: saif(a, [al = atom.location()](const mmcif::Point& pt) { return Distance(al, pt) <= kMaxMetalLigandDistance; }))
+				for (auto sa : saif(a, [al = atom.location()](const mmcif::Point &pt) { return Distance(al, pt) <= kMaxMetalLigandDistance; }))
 				{
 					float d = Distance(atom, sa);
 					assert(d <= kMaxMetalLigandDistance);
@@ -635,16 +652,16 @@ std::vector<IonSite> findOctahedralSites(c::Structure& structure, cif::Datablock
 		}
 
 		std::set<std::string> altIDs;
-		for (const auto& [a, f, s]: is.lig)
+		for (const auto &[a, f, s] : is.lig)
 		{
 			if (not a.labelAltID().empty())
 				altIDs.insert(a.labelAltID());
 		}
 
-		if (altIDs.empty())	// no alternates
+		if (altIDs.empty()) // no alternates
 			altIDs.insert("");
 
-		for (auto& alt: altIDs)
+		for (auto &alt : altIDs)
 		{
 			IonSite ais = is;
 			if (findOctahedralSites(structure, db, spacegroup, cell, ais, alt))
@@ -657,8 +674,9 @@ std::vector<IonSite> findOctahedralSites(c::Structure& structure, cif::Datablock
 
 // --------------------------------------------------------------------
 
-namespace {
-	std::string gVersionNr, gVersionDate;
+namespace
+{
+std::string gVersionNr, gVersionDate;
 }
 
 void load_version_info()
@@ -672,8 +690,8 @@ void load_version_info()
 
 	struct membuf : public std::streambuf
 	{
-		membuf(char* data, size_t length)       { this->setg(data, data, data + length); }
-	} buffer(const_cast<char*>(kRevision), sizeof(kRevision));
+		membuf(char *data, size_t length) { this->setg(data, data, data + length); }
+	} buffer(const_cast<char *>(kRevision), sizeof(kRevision));
 
 	std::istream is(&buffer);
 
@@ -712,7 +730,7 @@ void load_version_info()
 
 std::string get_version_nr()
 {
-	return gVersionNr/* + '/' + cif::get_version_nr()*/;
+	return gVersionNr /* + '/' + cif::get_version_nr()*/;
 }
 
 std::string get_version_date()
@@ -722,31 +740,20 @@ std::string get_version_date()
 
 // --------------------------------------------------------------------
 
-int pr_main(int argc, char* argv[])
+int pr_main(int argc, char *argv[])
 {
 	using namespace std::literals;
 
 	int result = 0;
 
-	po::options_description visible_options("platonyzer "s + PACKAGE_VERSION + " options file]" );
-	visible_options.add_options()
-		("output,o",	po::value<std::string>(),	"The output file, default is stdout")
-		("restraints-file,r",
-						po::value<std::string>(),	"Restraint file name, default is {id}_platonyze.restraints")
-		("delete-vdw-rest",						"Delete vanderWaals restraints for octahedral ions in the external for Refmac")
-		("create-na-mg-links",					"Create links for Na/Mg ion sites that were found")
-		("help,h",								"Display help message")
-		("version",								"Print version")
-		("verbose,v",							"Verbose output")
+	po::options_description visible_options("platonyzer "s + PACKAGE_VERSION + " options file]");
+	visible_options.add_options()("output,o", po::value<std::string>(), "The output file, default is stdout")("restraints-file,r",
+		po::value<std::string>(), "Restraint file name, default is {id}_platonyze.restraints")("delete-vdw-rest", "Delete vanderWaals restraints for octahedral ions in the external for Refmac")("create-na-mg-links", "Create links for Na/Mg ion sites that were found")("help,h", "Display help message")("version", "Print version")("verbose,v", "Verbose output")
 		// ("pdb-redo-data", po::value<std::string>(),	"The PDB-REDO dat file" /*, default is the built in one"*/)
-		("dict",		po::value<std::string>(),	"Dictionary file containing restraints for residues in this specific target")
-		;
+		("dict", po::value<std::string>(), "Dictionary file containing restraints for residues in this specific target");
 
 	po::options_description hidden_options("hidden options");
-	hidden_options.add_options()
-		("input,i",		po::value<std::string>(),	"Input files")
-		("test",								"Run test-suite")
-		("debug,d",		po::value<int>(),		"Debug level (for even more verbose output)");
+	hidden_options.add_options()("input,i", po::value<std::string>(), "Input files")("test", "Run test-suite")("debug,d", po::value<int>(), "Debug level (for even more verbose output)");
 
 	po::options_description cmdline_options;
 	cmdline_options.add(visible_options).add(hidden_options);
@@ -802,7 +809,7 @@ int pr_main(int argc, char* argv[])
 	if (cif::VERBOSE)
 		std::cerr << " done" << std::endl;
 
-	auto& db = pdb.data();
+	auto &db = pdb.data();
 
 	// -----------------------------------------------------------------------
 
@@ -812,14 +819,15 @@ int pr_main(int argc, char* argv[])
 
 	double a, b, c, alpha, beta, gamma;
 	cif::tie(a, b, c, alpha, beta, gamma) = db["cell"][cif::Key("entry_id") == entryId]
-		.get("length_a", "length_b", "length_c",
-			 "angle_alpha", "angle_beta", "angle_gamma");
+												.get("length_a", "length_b", "length_c",
+													"angle_alpha", "angle_beta", "angle_gamma");
 
 	clipper::Cell cell(clipper::Cell_descr(a, b, c, alpha, beta, gamma));
 
 	std::string spacegroupName = db["symmetry"]
-		[cif::Key("entry_id") == entryId]
-		["space_group_name_H-M"].as<std::string>();
+								   [cif::Key("entry_id") == entryId]
+								   ["space_group_name_H-M"]
+									   .as<std::string>();
 
 	int spacegroupNr = mmcif::GetSpacegroupNumber(spacegroupName);
 
@@ -830,27 +838,26 @@ int pr_main(int argc, char* argv[])
 		restraintFileName = vm["restraints-file"].as<std::string>();
 	RestraintGenerator rg(restraintFileName, vm.count("delete-vdw-rest"));
 
-	auto& structConn = db["struct_conn"];
+	auto &structConn = db["struct_conn"];
 
 	std::size_t removedLinks = 0, createdLinks = 0;
 	std::size_t platonyzerLinkId = 1;
 
 	bool createNaMgLinks = vm.count("create-na-mg-links");
 
-	for (auto& ionSites: {
-		findZincSites(structure, db, spacegroupNr, cell),
-		findOctahedralSites(structure, db, spacegroupNr, cell)
-		})
+	for (auto &ionSites : {
+			 findZincSites(structure, db, spacegroupNr, cell),
+			 findOctahedralSites(structure, db, spacegroupNr, cell)})
 	{
-		for (auto ionSite: ionSites)
+		for (auto ionSite : ionSites)
 		{
 			// write restraints
 			std::vector<c::Atom> ligands;
-			transform(ionSite.lig.begin(), ionSite.lig.end(), back_inserter(ligands), [](auto& l) { return std::get<0>(l); });
+			transform(ionSite.lig.begin(), ionSite.lig.end(), back_inserter(ligands), [](auto &l) { return std::get<0>(l); });
 
 			switch (ionSite.lig.size())
 			{
-				case 4: 
+				case 4:
 					rg.writeTetrahedral(ionSite.ion, ligands);
 					break;
 				case 6:
@@ -870,37 +877,35 @@ int pr_main(int argc, char* argv[])
 
 			createdLinks += ionSite.lig.size();
 
-			for (auto&& [atom, distance, symop] : ionSite.lig)
+			for (auto &&[atom, distance, symop] : ionSite.lig)
 			{
 				std::string id = "metalc_p-" + std::to_string(platonyzerLinkId++);
 
-				structConn.emplace({
-					{ "id", id },
-					{ "conn_type_id", "metalc" },
-					{ "ptnr1_label_asym_id", atom.labelAsymID() },
-					{ "ptnr1_label_comp_id", atom.labelCompID() },
-					{ "ptnr1_label_seq_id", atom.labelSeqID() },
-					{ "ptnr1_label_atom_id", atom.labelAtomID() },
-					{ "pdbx_ptnr1_label_alt_id", atom.labelAltID() },
-					{ "pdbx_ptnr1_PDB_ins_code", atom.pdbxAuthInsCode() },
-					{ "ptnr1_symmetry", "1_555" },
-					{ "ptnr1_auth_asym_id", atom.authAsymID() },
-					{ "ptnr1_auth_comp_id", atom.authCompID() },
-					{ "ptnr1_auth_seq_id", atom.authSeqID() },
+				structConn.emplace({{"id", id},
+					{"conn_type_id", "metalc"},
+					{"ptnr1_label_asym_id", atom.labelAsymID()},
+					{"ptnr1_label_comp_id", atom.labelCompID()},
+					{"ptnr1_label_seq_id", atom.labelSeqID()},
+					{"ptnr1_label_atom_id", atom.labelAtomID()},
+					{"pdbx_ptnr1_label_alt_id", atom.labelAltID()},
+					{"pdbx_ptnr1_PDB_ins_code", atom.pdbxAuthInsCode()},
+					{"ptnr1_symmetry", "1_555"},
+					{"ptnr1_auth_asym_id", atom.authAsymID()},
+					{"ptnr1_auth_comp_id", atom.authCompID()},
+					{"ptnr1_auth_seq_id", atom.authSeqID()},
 
-					{ "ptnr2_label_asym_id", ionSite.ion.labelAsymID() },
-					{ "ptnr2_label_comp_id", ionSite.ion.labelCompID() },
-					{ "ptnr2_label_seq_id", "?" },
-					{ "ptnr2_label_atom_id", ionSite.ion.labelAtomID() },
-					{ "pdbx_ptnr2_label_alt_id", ionSite.ion.labelAltID() },
-					{ "pdbx_ptnr2_PDB_ins_code", ionSite.ion.pdbxAuthInsCode() },
-					{ "ptnr2_auth_asym_id", ionSite.ion.authAsymID() },
-					{ "ptnr2_auth_comp_id", ionSite.ion.authCompID() },
-					{ "ptnr2_auth_seq_id", ionSite.ion.authSeqID() },
-					{ "ptnr2_symmetry", symop },
+					{"ptnr2_label_asym_id", ionSite.ion.labelAsymID()},
+					{"ptnr2_label_comp_id", ionSite.ion.labelCompID()},
+					{"ptnr2_label_seq_id", "?"},
+					{"ptnr2_label_atom_id", ionSite.ion.labelAtomID()},
+					{"pdbx_ptnr2_label_alt_id", ionSite.ion.labelAltID()},
+					{"pdbx_ptnr2_PDB_ins_code", ionSite.ion.pdbxAuthInsCode()},
+					{"ptnr2_auth_asym_id", ionSite.ion.authAsymID()},
+					{"ptnr2_auth_comp_id", ionSite.ion.authCompID()},
+					{"ptnr2_auth_seq_id", ionSite.ion.authSeqID()},
+					{"ptnr2_symmetry", symop},
 
-					{ "pdbx_dist_value", distance }
-				});
+					{"pdbx_dist_value", distance}});
 			}
 		}
 	}
@@ -909,7 +914,7 @@ int pr_main(int argc, char* argv[])
 
 	if (cif::VERBOSE)
 		std::cerr << "Removed " << removedLinks << " link records" << std::endl
-			 << "Created " << createdLinks << " link records" << std::endl;
+				  << "Created " << createdLinks << " link records" << std::endl;
 
 	// -----------------------------------------------------------------------
 
@@ -926,31 +931,31 @@ int pr_main(int argc, char* argv[])
 // --------------------------------------------------------------------
 
 // recursively print exception whats:
-void print_what (const std::exception& e)
+void print_what(const std::exception &e)
 {
 	std::cerr << e.what() << std::endl;
 	try
 	{
 		std::rethrow_if_nested(e);
 	}
-	catch (const std::exception& nested)
+	catch (const std::exception &nested)
 	{
 		std::cerr << " >> ";
 		print_what(nested);
 	}
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	int result = -1;
-	
+
 	try
 	{
 		load_version_info();
-		
+
 		result = pr_main(argc, argv);
 	}
-	catch (std::exception& ex)
+	catch (std::exception &ex)
 	{
 		print_what(ex);
 		exit(1);
@@ -958,4 +963,3 @@ int main(int argc, char* argv[])
 
 	return result;
 }
-
