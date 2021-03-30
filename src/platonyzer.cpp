@@ -41,6 +41,7 @@
 #include "cif++/Structure.hpp"
 #include "cif++/Symmetry.hpp"
 
+#include "pdb-redo/SkipList.hpp"
 #include "pdb-redo/Symmetry-2.hpp"
 
 std::string VERSION_STRING;
@@ -672,6 +673,34 @@ std::vector<IonSite> findOctahedralSites(c::Structure &structure, cif::Datablock
 	return result;
 }
 
+void updateSkipLists(const IonSite &ion, SkipList &water, SkipList &pepflipO, SkipList &pepflipN, SkipList &sideaid)
+{
+	for (const auto& [atom, distance, ignore] : ion.lig)
+	{
+		if (atom.isWater())
+			water.push_back(atom);
+		else
+		{
+			auto compound = mmcif::Compound::create(atom.labelCompID());
+			if (not compound)
+				continue;
+			
+			if (compound->group() != "peptide" and compound->group() != "p-peptide" and compound->group() != "m-peptide")
+				continue;
+			
+			if (atom.isBackBone())
+			{
+				if (atom.type() == mmcif::O)
+					pepflipO.push_back(atom);
+				else if (atom.type() == mmcif::N)
+					pepflipN.push_back(atom);
+			}
+			else
+				sideaid.push_back(atom);
+		}
+	}
+}
+
 // --------------------------------------------------------------------
 
 namespace
@@ -747,13 +776,20 @@ int pr_main(int argc, char *argv[])
 	int result = 0;
 
 	po::options_description visible_options("platonyzer "s + PACKAGE_VERSION + " options file]");
-	visible_options.add_options()("output,o", po::value<std::string>(), "The output file, default is stdout")("restraints-file,r",
-		po::value<std::string>(), "Restraint file name, default is {id}_platonyze.restraints")("delete-vdw-rest", "Delete vanderWaals restraints for octahedral ions in the external for Refmac")("create-na-mg-links", "Create links for Na/Mg ion sites that were found")("help,h", "Display help message")("version", "Print version")("verbose,v", "Verbose output")
-		// ("pdb-redo-data", po::value<std::string>(),	"The PDB-REDO dat file" /*, default is the built in one"*/)
-		("dict", po::value<std::string>(), "Dictionary file containing restraints for residues in this specific target");
+	visible_options.add_options()
+		( "output,o",	po::value<std::string>(), "The output file, default is stdout" )
+		( "delete-vdw-rest",		"Delete vanderWaals restraints for octahedral ions in the external for Refmac" )
+		( "create-na-mg-links",		"Create links for Na/Mg ion sites that were found" )
+		( "help,h",					"Display help message" )
+		( "version",				"Print version" )
+		( "verbose,v",				"Verbose output" )
+		// ( "pdb-redo-data", po::value<std::string>(),	"The PDB-REDO dat file" /*, default is the built in one"*/)
+		( "dict", po::value<std::string>(), "Dictionary file containing restraints for residues in this specific target" );
 
 	po::options_description hidden_options("hidden options");
-	hidden_options.add_options()("input,i", po::value<std::string>(), "Input files")("test", "Run test-suite")("debug,d", po::value<int>(), "Debug level (for even more verbose output)");
+	hidden_options.add_options()
+		( "input,i",	po::value<std::string>(),	"Input files" )
+		( "debug,d",	po::value<int>(),			"Debug level (for even more verbose output)" );
 
 	po::options_description cmdline_options;
 	cmdline_options.add(visible_options).add(hidden_options);
@@ -784,7 +820,7 @@ int pr_main(int argc, char *argv[])
 		exit(0);
 	}
 
-	if (vm.count("help") or vm.count("input") == 0)
+	if (vm.count("help") or vm.count("input") == 0 or vm.count("output") == 0)
 	{
 		std::cerr << visible_options << std::endl;
 		exit(1);
@@ -833,10 +869,10 @@ int pr_main(int argc, char *argv[])
 
 	// -----------------------------------------------------------------------
 
-	std::string restraintFileName = entryId + "_platonyzer.restraints";
-	if (vm.count("restraints-file"))
-		restraintFileName = vm["restraints-file"].as<std::string>();
-	RestraintGenerator rg(restraintFileName, vm.count("delete-vdw-rest"));
+	fs::path outfile = vm["output"].as<std::string>();
+	fs::path outfile_extra = outfile;
+
+	RestraintGenerator rg(outfile_extra.replace_extension(".restraints"), vm.count("delete-vdw-rest"));
 
 	auto &structConn = db["struct_conn"];
 
@@ -844,6 +880,8 @@ int pr_main(int argc, char *argv[])
 	std::size_t platonyzerLinkId = 1;
 
 	bool createNaMgLinks = vm.count("create-na-mg-links");
+
+	SkipList waters, pepflipO, pepflipN, sideaid;
 
 	for (auto &ionSites : {
 			 findZincSites(structure, db, spacegroupNr, cell),
@@ -862,6 +900,7 @@ int pr_main(int argc, char *argv[])
 					break;
 				case 6:
 					rg.writeOctahedral(ionSite.ion, ligands, ionSite.opposing);
+					updateSkipLists(ionSite, waters, pepflipO, pepflipN, sideaid);
 					break;
 			};
 
@@ -920,10 +959,12 @@ int pr_main(int argc, char *argv[])
 
 	db.add_software("platonyzer", "other", get_version_nr(), get_version_date());
 
-	if (vm.count("output"))
-		pdb.save(vm["output"].as<std::string>());
-	else
-		pdb.file().save(std::cout);
+	pdb.save(outfile);
+
+	writeSkipList(outfile_extra.replace_extension(".skip-waters"), waters, SkipListFormat::OLD);
+	writeSkipList(outfile_extra.replace_extension(".skip-pepflipN"), pepflipN, SkipListFormat::OLD);
+	writeSkipList(outfile_extra.replace_extension(".skip-pepflipO"), pepflipO, SkipListFormat::OLD);
+	writeSkipList(outfile_extra.replace_extension(".skip-sideaid"), sideaid, SkipListFormat::OLD);
 
 	return result;
 }

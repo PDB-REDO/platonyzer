@@ -40,8 +40,8 @@ LDFLAGS				= @BOOST_LDFLAGS@ \
 					  @PTHREAD_CFLAGS@
 LIBS				= @PTHREAD_LIBS@ \
 					  @CIFPP_LIBS@ \
-					  @ZEEP_LIBS@ \
 					  @PDB_REDO_LIBS@ \
+					  @ZEEP_LIBS@ \
 					  @CLIPPER_LIBS@ \
 					  @BOOST_PROGRAM_OPTIONS_LIB@ \
 					  @BOOST_IOSTREAMS_LIB@ \
