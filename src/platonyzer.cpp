@@ -778,6 +778,8 @@ int pr_main(int argc, char *argv[])
 	po::options_description visible_options("platonyzer "s + PACKAGE_VERSION + " options file]");
 	visible_options.add_options()
 		( "output,o",	po::value<std::string>(), "The output file, default is stdout" )
+		( "skip-list-format", po::value<std::string>()->default_value("old"),
+									"Format to use for the skip lists, one of 'old', 'json' or 'cif'")
 		( "delete-vdw-rest",		"Delete vanderWaals restraints for octahedral ions in the external for Refmac" )
 		( "create-na-mg-links",		"Create links for Na/Mg ion sites that were found" )
 		( "help,h",					"Display help message" )
@@ -961,10 +963,18 @@ int pr_main(int argc, char *argv[])
 
 	pdb.save(outfile);
 
-	writeSkipList(outfile_extra.replace_extension(".skip-waters"), waters, SkipListFormat::OLD);
-	writeSkipList(outfile_extra.replace_extension(".skip-pepflipN"), pepflipN, SkipListFormat::OLD);
-	writeSkipList(outfile_extra.replace_extension(".skip-pepflipO"), pepflipO, SkipListFormat::OLD);
-	writeSkipList(outfile_extra.replace_extension(".skip-sideaid"), sideaid, SkipListFormat::OLD);
+	SkipListFormat fmt;
+	if (vm["skip-list-format"].as<std::string>() == "old")
+		fmt = SkipListFormat::OLD;
+	else if (vm["skip-list-format"].as<std::string>() == "json")
+		fmt = SkipListFormat::JSON;
+	else if (vm["skip-list-format"].as<std::string>() == "cif")
+		fmt = SkipListFormat::CIF;
+
+	writeSkipList(outfile_extra.replace_extension(".skip-waters"), waters, fmt);
+	writeSkipList(outfile_extra.replace_extension(".skip-pepflipN"), pepflipN, fmt);
+	writeSkipList(outfile_extra.replace_extension(".skip-pepflipO"), pepflipO, fmt);
+	writeSkipList(outfile_extra.replace_extension(".skip-sideaid"), sideaid, fmt);
 
 	return result;
 }
