@@ -12,3 +12,7 @@ src/config.hpp
 src/revision.hpp
 src/config.hpp.in~
 rsrc/bond-info.bin
+*.skip-*
+*.cif
+*.restraints
+

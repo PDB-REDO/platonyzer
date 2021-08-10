@@ -681,11 +681,14 @@ void updateSkipLists(const IonSite &ion, SkipList &water, SkipList &pepflipO, Sk
 			water.push_back(atom);
 		else
 		{
-			auto compound = mmcif::Compound::create(atom.labelCompID());
+			auto compound = mmcif::CompoundFactory::instance().create(atom.labelCompID());
 			if (not compound)
 				continue;
 			
-			if (compound->group() != "peptide" and compound->group() != "p-peptide" and compound->group() != "m-peptide")
+			// if (compound->group() != "peptide" and compound->group() != "p-peptide" and compound->group() != "m-peptide")
+			// 	continue;
+			
+			if (compound->type() != "peptide linking")
 				continue;
 			
 			if (atom.isBackBone())
