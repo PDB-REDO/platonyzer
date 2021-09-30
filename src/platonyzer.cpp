@@ -24,8 +24,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.hpp"
-
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -778,7 +776,7 @@ int pr_main(int argc, char *argv[])
 
 	int result = 0;
 
-	po::options_description visible_options("platonyzer "s + PACKAGE_VERSION + " options file]");
+	po::options_description visible_options("platonyzer "s + VERSION_STRING + " options file]");
 	visible_options.add_options()
 		( "output,o",	po::value<std::string>(), "The output file, default is stdout" )
 		( "skip-list-format", po::value<std::string>()->default_value("old"),
