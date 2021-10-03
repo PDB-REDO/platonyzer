@@ -773,6 +773,7 @@ std::string get_version_date()
 int pr_main(int argc, char *argv[])
 {
 	using namespace std::literals;
+	using namespace cif::literals;
 
 	int result = 0;
 
@@ -857,14 +858,14 @@ int pr_main(int argc, char *argv[])
 		throw std::runtime_error("Missing _entry.id in coordinates file");
 
 	double a, b, c, alpha, beta, gamma;
-	cif::tie(a, b, c, alpha, beta, gamma) = db["cell"][cif::Key("entry_id") == entryId]
+	cif::tie(a, b, c, alpha, beta, gamma) = db["cell"]["entry_id"_key == entryId]
 												.get("length_a", "length_b", "length_c",
 													"angle_alpha", "angle_beta", "angle_gamma");
 
 	clipper::Cell cell(clipper::Cell_descr(a, b, c, alpha, beta, gamma));
 
 	std::string spacegroupName = db["symmetry"]
-								   [cif::Key("entry_id") == entryId]
+								   ["entry_id"_key == entryId]
 								   ["space_group_name_H-M"]
 									   .as<std::string>();
 
@@ -910,8 +911,16 @@ int pr_main(int argc, char *argv[])
 			// replace LINK/struct_conn records
 			std::size_t n = structConn.size();
 			structConn.erase(
-				(cif::Key("ptnr1_label_asym_id") == ionSite.ion.labelAsymID() and cif::Key("ptnr1_label_atom_id") == ionSite.ion.labelAtomID()) or
-				(cif::Key("ptnr2_label_asym_id") == ionSite.ion.labelAsymID() and cif::Key("ptnr2_label_atom_id") == ionSite.ion.labelAtomID()));
+				("ptnr1_label_asym_id"_key == ionSite.ion.labelAsymID() and "ptnr1_label_atom_id"_key == ionSite.ion.labelAtomID()) or
+				("ptnr2_label_asym_id"_key == ionSite.ion.labelAsymID() and "ptnr2_label_atom_id"_key == ionSite.ion.labelAtomID()));
+
+			for (auto &atom : ligands)
+			{
+				structConn.erase(
+					"conn_type_id"_key == "disulf" and (
+					("ptnr1_label_asym_id"_key == atom.labelAsymID() and "ptnr1_label_atom_id"_key == atom.labelAtomID()) or
+					("ptnr2_label_asym_id"_key == atom.labelAsymID() and "ptnr2_label_atom_id"_key == atom.labelAtomID())));
+			}
 			removedLinks += (n - structConn.size());
 
 			if (not createNaMgLinks and (ionSite.ion.type() == c::AtomType::Na or ionSite.ion.type() == c::AtomType::Mg))
