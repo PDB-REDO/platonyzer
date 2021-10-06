@@ -395,7 +395,7 @@ std::vector<IonSite> findZincSites(c::Structure &structure, cif::Datablock &db, 
 				for (auto sa : saif(a, [al = atom.location()](const mmcif::Point &pt) { return Distance(al, pt) <= kMaxZnHisDistanceInCluster; }))
 				{
 					float d = Distance(atom, sa);
-					assert(d = kMaxZnHisDistanceInCluster);
+					assert(d <= kMaxZnHisDistanceInCluster);
 					zs.lig.emplace_back(sa, d, sa.symmetry());
 				}
 				continue;
