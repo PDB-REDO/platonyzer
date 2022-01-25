@@ -42,7 +42,7 @@
 #include "pdb-redo/SkipList.hpp"
 #include "pdb-redo/Symmetry-2.hpp"
 
-std::string VERSION_STRING;
+#include "revision.hpp"
 
 namespace po = boost::program_options;
 namespace io = boost::iostreams;
@@ -377,7 +377,7 @@ std::vector<IonSite> findZincSites(c::Structure &structure, cif::Datablock &db, 
 	std::vector<IonSite> result;
 
 	// factory for symmetry atom iterators
-	SymmetryAtomIteratorFactory saif(structure, spacegroup, cell);
+	pdb_redo::SymmetryAtomIteratorFactory saif(structure, spacegroup, cell);
 
 	for (auto atom : structure.atoms())
 	{
@@ -617,7 +617,7 @@ std::vector<IonSite> findOctahedralSites(c::Structure &structure, cif::Datablock
 	std::vector<IonSite> result;
 
 	// factory for symmetry atom iterators
-	SymmetryAtomIteratorFactory saif(structure, spacegroup, cell);
+	pdb_redo::SymmetryAtomIteratorFactory saif(structure, spacegroup, cell);
 
 	for (auto atom : structure.atoms())
 	{
@@ -671,7 +671,7 @@ std::vector<IonSite> findOctahedralSites(c::Structure &structure, cif::Datablock
 	return result;
 }
 
-void updateSkipLists(const IonSite &ion, SkipList &water, SkipList &pepflipO, SkipList &pepflipN, SkipList &sideaid)
+void updateSkipLists(const IonSite &ion, pdb_redo::SkipList &water, pdb_redo::SkipList &pepflipO, pdb_redo::SkipList &pepflipN, pdb_redo::SkipList &sideaid)
 {
 	for (const auto& [atom, distance, ignore] : ion.lig)
 	{
@@ -704,72 +704,6 @@ void updateSkipLists(const IonSite &ion, SkipList &water, SkipList &pepflipO, Sk
 
 // --------------------------------------------------------------------
 
-namespace
-{
-std::string gVersionNr, gVersionDate;
-}
-
-void load_version_info()
-{
-	const std::regex
-		rxVersionNr(R"(build-(\d+)-g[0-9a-f]{7}(-dirty)?)"),
-		rxVersionDate(R"(Date: +(\d{4}-\d{2}-\d{2}).*)"),
-		rxVersionNr2(R"(platonyzer-version: (\d+(?:\.\d+)+))");
-
-#include "revision.hpp"
-
-	struct membuf : public std::streambuf
-	{
-		membuf(char *data, size_t length) { this->setg(data, data, data + length); }
-	} buffer(const_cast<char *>(kRevision), sizeof(kRevision));
-
-	std::istream is(&buffer);
-
-	std::string line;
-
-	while (getline(is, line))
-	{
-		std::smatch m;
-
-		if (std::regex_match(line, m, rxVersionNr))
-		{
-			gVersionNr = m[1];
-			if (m[2].matched)
-				gVersionNr += '*';
-			continue;
-		}
-
-		if (std::regex_match(line, m, rxVersionDate))
-		{
-			gVersionDate = m[1];
-			continue;
-		}
-
-		// always the first, replace with more specific if followed by the other info
-		if (std::regex_match(line, m, rxVersionNr2))
-		{
-			gVersionNr = m[1];
-			continue;
-		}
-	}
-
-	if (not VERSION_STRING.empty())
-		VERSION_STRING += "\n";
-	VERSION_STRING += gVersionNr + " " + gVersionDate;
-}
-
-std::string get_version_nr()
-{
-	return gVersionNr /* + '/' + cif::get_version_nr()*/;
-}
-
-std::string get_version_date()
-{
-	return gVersionDate;
-}
-
-// --------------------------------------------------------------------
-
 int pr_main(int argc, char *argv[])
 {
 	using namespace std::literals;
@@ -777,7 +711,7 @@ int pr_main(int argc, char *argv[])
 
 	int result = 0;
 
-	po::options_description visible_options("platonyzer "s + VERSION_STRING + " options file]");
+	po::options_description visible_options("platonyzer "s + kVersionNumber + " options file]");
 	visible_options.add_options()
 		( "output,o",	po::value<std::string>(), "The output file, default is stdout" )
 		( "skip-list-format", po::value<std::string>()->default_value("old"),
@@ -820,7 +754,7 @@ int pr_main(int argc, char *argv[])
 
 	if (vm.count("version"))
 	{
-		std::cout << argv[0] << " version " << VERSION_STRING << std::endl;
+		write_version_string(std::cout, vm.count("verbose"));
 		exit(0);
 	}
 
@@ -885,7 +819,7 @@ int pr_main(int argc, char *argv[])
 
 	bool createNaMgLinks = vm.count("create-na-mg-links");
 
-	SkipList waters, pepflipO, pepflipN, sideaid;
+	pdb_redo::SkipList waters, pepflipO, pepflipN, sideaid;
 
 	for (auto &ionSites : {
 			 findZincSites(structure, db, spacegroupNr, cell),
@@ -969,17 +903,17 @@ int pr_main(int argc, char *argv[])
 
 	// -----------------------------------------------------------------------
 
-	db.add_software("platonyzer", "other", get_version_nr(), get_version_date());
+	db.add_software("platonyzer", "other", kVersionNumber, kBuildDate);
 
 	pdb.save(outfile);
 
-	SkipListFormat fmt;
+	pdb_redo::SkipListFormat fmt;
 	if (vm["skip-list-format"].as<std::string>() == "old")
-		fmt = SkipListFormat::OLD;
+		fmt = pdb_redo::SkipListFormat::OLD;
 	else if (vm["skip-list-format"].as<std::string>() == "json")
-		fmt = SkipListFormat::JSON;
+		fmt = pdb_redo::SkipListFormat::JSON;
 	else if (vm["skip-list-format"].as<std::string>() == "cif")
-		fmt = SkipListFormat::CIF;
+		fmt = pdb_redo::SkipListFormat::CIF;
 
 	writeSkipList(outfile_extra.replace_extension(".skip-waters"), waters, fmt);
 	writeSkipList(outfile_extra.replace_extension(".skip-pepflipN"), pepflipN, fmt);
@@ -1012,8 +946,6 @@ int main(int argc, char *argv[])
 
 	try
 	{
-		load_version_info();
-
 		result = pr_main(argc, argv);
 	}
 	catch (std::exception &ex)

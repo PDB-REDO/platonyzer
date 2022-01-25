@@ -106,23 +106,8 @@ if(UNIX AND NOT APPLE)
 endif()
 
 # Create a revision file, containing the current git version info
-
-find_package(Git)
-if(GIT_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
-	include(GetGitRevisionDescription)
-    get_git_head_revision(REFSPEC COMMITHASH)
-
-	# Generate our own version string
-	git_describe_working_tree(BUILD_VERSION_STRING --match=build --dirty)
-else()
-    message(WARNING "Git not found, cannot set version info")
-
-    SET(BUILD_VERSION_STRING ${PROJECT_VERSION})
-endif()
-
-# generate version.h
-string(TIMESTAMP BUILD_DATE_TIME "%Y-%m-%dT%H:%M:%SZ" UTC)
-configure_file("${CMAKE_SOURCE_DIR}/src/revision.hpp.in" "${CMAKE_BINARY_DIR}/revision.hpp" @ONLY)
+include(VersionString)
+write_version_header()
 
 # Optionally use mrc to create resources
 find_program(MRC mrc HINTS "$ENV{LOCALAPPDATA}/mrc" "$ENV{LOCALAPPDATA}/mrc/bin" "${CMAKE_INSTALL_PREFIX}/../mrc" "/usr/local/bin")
@@ -142,12 +127,8 @@ endif()
 
 # libraries
 
-set(Boost_DETAILED_FAILURE_MSG ON)
-if(NOT BUILD_SHARED_LIBS)
-	set(Boost_USE_STATIC_LIBS ON)
-endif()
-
 find_package(pdb-redo 2.0.2 REQUIRED)
+find_package(Boost COMPONENTS program_options REQUIRED)
 
 if(USE_RSRC)
 	add_custom_command(OUTPUT platonyzer_rsrc.obj
@@ -161,8 +142,8 @@ add_executable(platonyzer
 	${PROJECT_SOURCE_DIR}/src/platonyzer.cpp
 	${platonyzer_RESOURCE})
 
-target_include_directories(platonyzer PRIVATE pdb-redo::pdb-redo ${CMAKE_SOURCE_DIR}/include ${cifpp_INCLUDE_DIRS} ${CMAKE_BINARY_DIR})
-target_link_libraries(platonyzer PRIVATE pdb-redo::pdb-redo std::filesystem)
+target_include_directories(platonyzer PRIVATE pdb-redo::pdb-redo ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR})
+target_link_libraries(platonyzer PRIVATE pdb-redo::pdb-redo std::filesystem Boost::program_options)
 
 install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${BIN_INSTALL_DIR}
