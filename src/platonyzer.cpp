@@ -810,7 +810,7 @@ int pr_main(int argc, char *argv[])
 	fs::path outfile = vm["output"].as<std::string>();
 	fs::path outfile_extra = outfile;
 
-	RestraintGenerator rg(outfile_extra.replace_extension(".restraints"), vm.count("delete-vdw-rest"));
+	RestraintGenerator rg(outfile_extra.replace_extension(".restraints").string(), vm.count("delete-vdw-rest"));
 
 	auto &structConn = db["struct_conn"];
 

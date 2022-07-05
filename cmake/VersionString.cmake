@@ -50,6 +50,11 @@ function(write_version_header)
 	endif()
 
 	file(WRITE "${CMAKE_BINARY_DIR}/revision.hpp.in" [[// Generated revision file
+
+#pragma once
+
+#include <ostream>
+
 const char k@VAR_PREFIX@ProjectName[] = "@PROJECT_NAME@";
 const char k@VAR_PREFIX@VersionNumber[] = "@PROJECT_VERSION@";
 const char k@VAR_PREFIX@VersionGitTag[] = "@BUILD_GIT_TAGREF@";
@@ -62,8 +67,8 @@ inline void write_version_string(std::ostream &os, bool verbose)
 	if (verbose)
 	{
 		os << "build: " << k@VAR_PREFIX@BuildInfo << ' ' << k@VAR_PREFIX@BuildDate << std::endl;
-		if (strlen(kVersionGitTag))
-			std::cout << "git tag: " << k@VAR_PREFIX@VersionGitTag << std::endl;
+		if (k@VAR_PREFIX@VersionGitTag[0] != 0)
+			os << "git tag: " << k@VAR_PREFIX@VersionGitTag << std::endl;
 	}
 }
 ]])
