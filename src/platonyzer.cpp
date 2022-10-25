@@ -1,17 +1,17 @@
 /*-
  * SPDX-License-Identifier: BSD-2-Clause
- * 
+ *
  * Copyright (c) 2020 NKI/AVL, Netherlands Cancer Institute
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -29,26 +29,22 @@
 #include <iomanip>
 #include <unordered_set>
 
-#include <boost/iostreams/concepts.hpp> // output_filter
-#include <boost/iostreams/filtering_stream.hpp>
-#include <boost/iostreams/operations.hpp> // put
-#include <boost/program_options.hpp>
+#include <cfg.hpp>
+#include <cif++.hpp>
+#include <gxrio.hpp>
 
-#include "cif++.hpp"
-
-#include "pdb-redo/SkipList.hpp"
-#include "pdb-redo/Symmetry-2.hpp"
+#include <pdb-redo/SkipList.hpp>
+#include <pdb-redo/Symmetry-2.hpp>
 
 #include "revision.hpp"
 
-namespace po = boost::program_options;
-namespace io = boost::iostreams;
 namespace fs = std::filesystem;
 
 // -----------------------------------------------------------------------
 
 const std::set<std::string> kBackBone = {
-	"N", "CA", "C", "O", "OXT"};
+	"N", "CA", "C", "O", "OXT"
+};
 
 const float
 	kMaxZnHisDistanceInCluster = 3.8f,
@@ -76,14 +72,12 @@ class RestraintGenerator
 {
   public:
 	RestraintGenerator(const std::string &file, bool deleteVDWRestraints)
-		: m_file_file(file)
+		: m_file(file)
+		, m_unique(m_file)
 		, m_deleteVDWRestraints(deleteVDWRestraints)
 	{
-		if (not m_file_file.is_open())
+		if (not m_file.is_open())
 			throw std::runtime_error("Could not open restraint file " + file);
-
-		m_file.push(unique_filter());
-		m_file.push(m_file_file);
 	}
 
 	~RestraintGenerator() = default;
@@ -93,39 +87,56 @@ class RestraintGenerator
 		const std::vector<std::tuple<std::size_t, std::size_t>> &opposing);
 
   private:
-	class unique_filter : public io::output_filter
+
+	class unique_streambuf : public std::streambuf
 	{
 	  public:
-		template <typename Sink>
-		bool put(Sink &dest, int c)
-		{
-			bool result = true;
+		using base_type = std::streambuf;
+		using int_type = base_type::int_type;
+		using char_type = base_type::char_type;
+		using traits_type = base_type::traits_type;
 
-			if (c == '\n')
+		unique_streambuf(std::ostream &os)
+			: m_os(os)
+			, m_upstream(os.rdbuf())
+		{
+		}
+
+		~unique_streambuf()
+		{
+			m_os.rdbuf(m_upstream);
+		}
+
+		virtual int_type
+		overflow(int_type ic = traits_type::eof())
+		{
+			char ch = traits_type::to_char_type(ic);
+
+			int_type result = ic;
+
+			if (ch == '\n' or result == traits_type::eof())
 			{
 				if (m_seen.insert(m_line).second)
 				{
-					for (char ch : m_line)
-						io::put(dest, ch);
-					result = io::put(dest, c);
+					for (char c : m_line)
+						m_upstream->sputc(c);
+					if (ch == '\n')
+						m_upstream->sputc(ch);
 				}
 
 				m_line.clear();
 			}
 			else
-				m_line += c;
+				m_line += ch;
 
 			return result;
 		}
 
-		template <typename Sink>
-		void close(Sink &)
-		{
-			m_line.clear();
-			m_seen.clear();
-		}
+		std::streambuf *get_upstream() const { return m_upstream; }
 
 	  private:
+		std::ostream &m_os;
+		std::streambuf *m_upstream;
 		std::string m_line;
 		std::unordered_set<std::string> m_seen;
 	};
@@ -157,8 +168,8 @@ class RestraintGenerator
 		}
 	};
 
-	std::ofstream m_file_file;
-	io::filtering_ostream m_file;
+	std::ofstream m_file;
+	unique_streambuf m_unique;
 	bool m_deleteVDWRestraints;
 };
 
@@ -190,7 +201,7 @@ std::size_t RestraintGenerator::writeOctahedral(const cif::mm::atom &ion, const 
 		m_file << "vdwr exclude " << AtomPart(ion) << std::endl;
 
 	std::set<std::size_t> one_side_ligand;
-	for (const auto& [a, b]: opposing)
+	for (const auto &[a, b] : opposing)
 		one_side_ligand.insert(a);
 
 	std::size_t n = 0, ai = 0;
@@ -283,15 +294,16 @@ bool findZincSites(cif::mm::structure &structure, cif::datablock &db, int spaceg
 		if (not altID.empty())
 		{
 			zs.lig.erase(
-				std::remove_if(zs.lig.begin(), zs.lig.end(), [altID](auto &l) {
+				std::remove_if(zs.lig.begin(), zs.lig.end(), [altID](auto &l)
+					{
 					auto alt = std::get<0>(l).get_label_alt_id();
-					return not alt.empty() and alt != altID;
-				}),
+					return not alt.empty() and alt != altID; }),
 				zs.lig.end());
 		}
 
 		// sort ligands on distance
-		std::sort(zs.lig.begin(), zs.lig.end(), [](auto &a, auto &b) { return std::get<1>(a) < std::get<1>(b); });
+		std::sort(zs.lig.begin(), zs.lig.end(), [](auto &a, auto &b)
+			{ return std::get<1>(a) < std::get<1>(b); });
 
 		// take the nearest atom of a residue, this takes care of NE2/ND1 from a single HIS
 		// and also the alt cases
@@ -383,13 +395,14 @@ std::vector<IonSite> findZincSites(cif::mm::structure &structure, cif::datablock
 
 		atom.set_property("pdbx_formal_charge", 2);
 
-		IonSite zs = {atom};
+		IonSite zs = { atom };
 
 		for (auto a : structure.atoms())
 		{
 			if (a.get_label_comp_id() == "HIS" and (a.get_label_atom_id() == "ND1" or a.get_label_atom_id() == "NE2"))
 			{
-				for (auto sa : saif(a, [al = atom.get_location()](const cif::point &pt) { return distance(al, pt) <= kMaxZnHisDistanceInCluster; }))
+				for (auto sa : saif(a, [al = atom.get_location()](const cif::point &pt)
+						 { return distance(al, pt) <= kMaxZnHisDistanceInCluster; }))
 				{
 					float d = distance(atom, sa);
 					assert(d <= kMaxZnHisDistanceInCluster);
@@ -400,7 +413,8 @@ std::vector<IonSite> findZincSites(cif::mm::structure &structure, cif::datablock
 
 			if (a.get_label_comp_id() == "CYS" and a.get_label_atom_id() == "SG")
 			{
-				for (auto sa : saif(a, [al = atom.get_location()](const cif::point &pt) { return distance(al, pt) <= kMaxZnCysDistanceInCluster; }))
+				for (auto sa : saif(a, [al = atom.get_location()](const cif::point &pt)
+						 { return distance(al, pt) <= kMaxZnCysDistanceInCluster; }))
 				{
 					float d = distance(atom, sa);
 					assert(d <= kMaxZnCysDistanceInCluster);
@@ -461,15 +475,16 @@ bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, int 
 		if (not altID.empty())
 		{
 			is.lig.erase(
-				std::remove_if(is.lig.begin(), is.lig.end(), [altID](auto &l) {
+				std::remove_if(is.lig.begin(), is.lig.end(), [altID](auto &l)
+					{
 					auto alt = std::get<0>(l).get_label_alt_id();
-					return not alt.empty() and alt != altID;
-				}),
+					return not alt.empty() and alt != altID; }),
 				is.lig.end());
 		}
 
 		// sort ligands on distance
-		sort(is.lig.begin(), is.lig.end(), [](auto &a, auto &b) { return std::get<1>(a) < std::get<1>(b); });
+		sort(is.lig.begin(), is.lig.end(), [](auto &a, auto &b)
+			{ return std::get<1>(a) < std::get<1>(b); });
 
 		// take the nearest atom of a residue, this takes care of NE2/ND1 from a single HIS
 		// and also the alt cases
@@ -573,9 +588,12 @@ bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, int 
 
 		while (is.lig.size() > 6)
 		{
-			double sum = accumulate(is.lig.begin(), is.lig.end(), 0.0, [](double s, auto &l) { return s + std::get<1>(l); });
+			double sum = accumulate(is.lig.begin(), is.lig.end(), 0.0, [](double s, auto &l)
+				{ return s + std::get<1>(l); });
 			double avg = sum / is.lig.size();
-			double stddev = sqrt(accumulate(is.lig.begin(), is.lig.end(), 0.0, [avg](double s, auto &l) { return s + (std::get<1>(l) - avg) * (std::get<1>(l) - avg); }) / (is.lig.size() - 1));
+			double stddev = sqrt(accumulate(is.lig.begin(), is.lig.end(), 0.0, [avg](double s, auto &l)
+									 { return s + (std::get<1>(l) - avg) * (std::get<1>(l) - avg); }) /
+								 (is.lig.size() - 1));
 
 			// only test if max distance is outlier
 			double G = (std::get<1>(is.lig.back()) - avg) / stddev;
@@ -629,7 +647,7 @@ std::vector<IonSite> findOctahedralSites(cif::mm::structure &structure, cif::dat
 		if (compID != "NA" and compID != "MG")
 			continue;
 
-		IonSite is = {atom};
+		IonSite is = { atom };
 
 		for (auto a : structure.atoms())
 		{
@@ -638,7 +656,8 @@ std::vector<IonSite> findOctahedralSites(cif::mm::structure &structure, cif::dat
 				a.get_type() == cif::atom_type::N)
 			{
 				// for (auto sa: saif(a))
-				for (auto sa : saif(a, [al = atom.get_location()](const cif::point &pt) { return distance(al, pt) <= kMaxMetalLigandDistance; }))
+				for (auto sa : saif(a, [al = atom.get_location()](const cif::point &pt)
+						 { return distance(al, pt) <= kMaxMetalLigandDistance; }))
 				{
 					float d = distance(atom, sa);
 					assert(d <= kMaxMetalLigandDistance);
@@ -670,7 +689,7 @@ std::vector<IonSite> findOctahedralSites(cif::mm::structure &structure, cif::dat
 
 void updateSkipLists(const IonSite &ion, pdb_redo::SkipList &water, pdb_redo::SkipList &pepflipO, pdb_redo::SkipList &pepflipN, pdb_redo::SkipList &sideaid)
 {
-	for (const auto& [atom, distance, ignore] : ion.lig)
+	for (const auto &[atom, distance, ignore] : ion.lig)
 	{
 		if (atom.is_water())
 			water.push_back(atom);
@@ -679,13 +698,13 @@ void updateSkipLists(const IonSite &ion, pdb_redo::SkipList &water, pdb_redo::Sk
 			auto compound = cif::compound_factory::instance().create(atom.get_label_comp_id());
 			if (not compound)
 				continue;
-			
+
 			// if (compound->group() != "peptide" and compound->group() != "p-peptide" and compound->group() != "m-peptide")
 			// 	continue;
-			
+
 			if (compound->type() != "peptide linking")
 				continue;
-			
+
 			if (atom.is_back_bone())
 			{
 				if (atom.get_type() == cif::O)
@@ -708,73 +727,45 @@ int pr_main(int argc, char *argv[])
 
 	int result = 0;
 
-	po::options_description visible_options("platonyzer "s + kVersionNumber + " options file]");
-	visible_options.add_options()
-		( "output,o",	po::value<std::string>(), "The output file, default is stdout" )
-		( "skip-list-format", po::value<std::string>()->default_value("old"),
-									"Format to use for the skip lists, one of 'old', 'json' or 'cif'")
-		( "delete-vdw-rest",		"Delete vanderWaals restraints for octahedral ions in the external for Refmac" )
-		( "create-na-mg-links",		"Create links for Na/Mg ion sites that were found" )
-		( "help,h",					"Display help message" )
-		( "version",				"Print version" )
-		( "verbose,v",				"Verbose output" )
-		// ( "pdb-redo-data", po::value<std::string>(),	"The PDB-REDO dat file" /*, default is the built in one"*/)
-		( "dict", po::value<std::string>(), "Dictionary file containing restraints for residues in this specific target" );
+	auto &config = cfg::config::instance();
 
-	po::options_description hidden_options("hidden options");
-	hidden_options.add_options()
-		( "input,i",	po::value<std::string>(),	"Input files" )
-		( "debug,d",	po::value<int>(),			"Debug level (for even more verbose output)" );
+	config.init(
+		cfg::make_option("help,h", "Display help message"),
+		cfg::make_option("version", "Print version"),
+		cfg::make_option("verbose,v", "Verbose output"),
+		cfg::make_option<std::string>("skip-list-format", "old", "Format to use for the skip lists, one of 'old', 'json' or 'cif'"),
+		cfg::make_option("delete-vdw-rest", "Delete vanderWaals restraints for octahedral ions in the external for Refmac"),
+		cfg::make_option("create-na-mg-links", "Create links for Na/Mg ion sites that were found"),
+		// ( "pdb<std::string>-redo-data", "The PDB-REDO dat file" /*, default is the built in one"*/),
+		cfg::make_option<std::string>("dict", "Dictionary file containing restraints for residues in this specific target"));
 
-	po::options_description cmdline_options;
-	cmdline_options.add(visible_options).add(hidden_options);
+	config.parse(argc, argv);
 
-	po::positional_options_description p;
-	p.add("input", 1);
-	p.add("output", 2);
-
-	po::variables_map vm;
-	po::store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), vm);
-
-	fs::path configFile = "platonyzer.conf";
-	if (not fs::exists(configFile) and getenv("HOME") != nullptr)
-		configFile = fs::path(getenv("HOME")) / ".config" / "platonyzer.conf";
-
-	if (fs::exists(configFile))
+	if (config.has("version"))
 	{
-		std::ifstream cfgFile(configFile);
-		if (cfgFile.is_open())
-			po::store(po::parse_config_file(cfgFile, visible_options), vm);
-	}
-
-	po::notify(vm);
-
-	if (vm.count("version"))
-	{
-		write_version_string(std::cout, vm.count("verbose"));
+		write_version_string(std::cout, config.has("verbose"));
 		exit(0);
 	}
 
-	if (vm.count("help") or vm.count("input") == 0 or vm.count("output") == 0)
+	if (config.has("help") or config.operands().size() != 2)
 	{
-		std::cerr << visible_options << std::endl;
-		exit(1);
+		std::cerr << "platonyzer "s + kVersionNumber + " [options] inputfile outputfile]" << std::endl
+				  << config << std::endl;
+		exit(config.has("help") ? 0 : 1);
 	}
 
 	// Load dict, if any
 
-	if (vm.count("dict"))
-		cif::compound_factory::instance().push_dictionary(vm["dict"].as<std::string>());
+	if (config.has("dict"))
+		cif::compound_factory::instance().push_dictionary(config.get<std::string>("dict"));
 
-	cif::VERBOSE = vm.count("verbose") != 0;
-	if (vm.count("debug"))
-		cif::VERBOSE = vm["debug"].as<int>();
+	cif::VERBOSE = config.count("verbose");
 
 	if (cif::VERBOSE)
 		std::cerr << "Loading data...";
 
-	fs::path input = vm["input"].as<std::string>();
-	cif::file pdb(input);
+	fs::path input = config.operands().front();
+	cif::file pdb = cif::pdb::read(input);
 	cif::mm::structure structure(pdb);
 
 	if (cif::VERBOSE)
@@ -788,7 +779,7 @@ int pr_main(int argc, char *argv[])
 	if (entryId.empty())
 		throw std::runtime_error("Missing _entry.id in coordinates file");
 
-	const auto &[a, b, c, alpha, beta, gamma] = db["cell"].find1<double,double,double,double,double,double>("entry_id"_key == entryId,
+	const auto &[a, b, c, alpha, beta, gamma] = db["cell"].find1<double, double, double, double, double, double>("entry_id"_key == entryId,
 		"length_a", "length_b", "length_c", "angle_alpha", "angle_beta", "angle_gamma");
 
 	clipper::Cell cell(clipper::Cell_descr(a, b, c, alpha, beta, gamma));
@@ -798,29 +789,30 @@ int pr_main(int argc, char *argv[])
 
 	// -----------------------------------------------------------------------
 
-	fs::path outfile = vm["output"].as<std::string>();
+	fs::path outfile = config.operands().back();
 	fs::path outfile_extra = outfile;
 
-	RestraintGenerator rg(outfile_extra.replace_extension(".restraints").string(), vm.count("delete-vdw-rest"));
+	RestraintGenerator rg(outfile_extra.replace_extension(".restraints").string(), config.has("delete-vdw-rest"));
 
 	auto &structConn = db["struct_conn"];
 
 	std::size_t removedLinks = 0, createdLinks = 0;
 	std::size_t platonyzerLinkId = 1;
 
-	bool createNaMgLinks = vm.count("create-na-mg-links");
+	bool createNaMgLinks = config.has("create-na-mg-links");
 
 	pdb_redo::SkipList waters, pepflipO, pepflipN, sideaid;
 
 	for (auto &ionSites : {
 			 findZincSites(structure, db, spacegroupNr, cell),
-			 findOctahedralSites(structure, db, spacegroupNr, cell)})
+			 findOctahedralSites(structure, db, spacegroupNr, cell) })
 	{
 		for (auto ionSite : ionSites)
 		{
 			// write restraints
 			std::vector<cif::mm::atom> ligands;
-			transform(ionSite.lig.begin(), ionSite.lig.end(), back_inserter(ligands), [](auto &l) { return std::get<0>(l); });
+			transform(ionSite.lig.begin(), ionSite.lig.end(), back_inserter(ligands), [](auto &l)
+				{ return std::get<0>(l); });
 
 			switch (ionSite.lig.size())
 			{
@@ -842,9 +834,8 @@ int pr_main(int argc, char *argv[])
 			for (auto &atom : ligands)
 			{
 				structConn.erase(
-					"conn_type_id"_key == "disulf" and (
-					("ptnr1_label_asym_id"_key == atom.get_label_asym_id() and "ptnr1_label_atom_id"_key == atom.get_label_atom_id()) or
-					("ptnr2_label_asym_id"_key == atom.get_label_asym_id() and "ptnr2_label_atom_id"_key == atom.get_label_atom_id())));
+					"conn_type_id"_key == "disulf" and (("ptnr1_label_asym_id"_key == atom.get_label_asym_id() and "ptnr1_label_atom_id"_key == atom.get_label_atom_id()) or
+														   ("ptnr2_label_asym_id"_key == atom.get_label_asym_id() and "ptnr2_label_atom_id"_key == atom.get_label_atom_id())));
 			}
 			removedLinks += (n - structConn.size());
 
@@ -857,31 +848,31 @@ int pr_main(int argc, char *argv[])
 			{
 				std::string id = "metalc_p-" + std::to_string(platonyzerLinkId++);
 
-				structConn.emplace({{"id", id},
-					{"conn_type_id", "metalc"},
-					{"ptnr1_label_asym_id", atom.get_label_asym_id()},
-					{"ptnr1_label_comp_id", atom.get_label_comp_id()},
-					{"ptnr1_label_seq_id", atom.get_label_seq_id()},
-					{"ptnr1_label_atom_id", atom.get_label_atom_id()},
-					{"pdbx_ptnr1_label_alt_id", atom.get_label_alt_id()},
-					{"pdbx_ptnr1_PDB_ins_code", atom.get_pdb_ins_code()},
-					{"ptnr1_symmetry", "1_555"},
-					{"ptnr1_auth_asym_id", atom.get_auth_asym_id()},
-					{"ptnr1_auth_comp_id", atom.get_label_comp_id()},
-					{"ptnr1_auth_seq_id", atom.get_auth_seq_id()},
+				structConn.emplace({ { "id", id },
+					{ "conn_type_id", "metalc" },
+					{ "ptnr1_label_asym_id", atom.get_label_asym_id() },
+					{ "ptnr1_label_comp_id", atom.get_label_comp_id() },
+					{ "ptnr1_label_seq_id", atom.get_label_seq_id() },
+					{ "ptnr1_label_atom_id", atom.get_label_atom_id() },
+					{ "pdbx_ptnr1_label_alt_id", atom.get_label_alt_id() },
+					{ "pdbx_ptnr1_PDB_ins_code", atom.get_pdb_ins_code() },
+					{ "ptnr1_symmetry", "1_555" },
+					{ "ptnr1_auth_asym_id", atom.get_auth_asym_id() },
+					{ "ptnr1_auth_comp_id", atom.get_label_comp_id() },
+					{ "ptnr1_auth_seq_id", atom.get_auth_seq_id() },
 
-					{"ptnr2_label_asym_id", ionSite.ion.get_label_asym_id()},
-					{"ptnr2_label_comp_id", ionSite.ion.get_label_comp_id()},
-					{"ptnr2_label_seq_id", "?"},
-					{"ptnr2_label_atom_id", ionSite.ion.get_label_atom_id()},
-					{"pdbx_ptnr2_label_alt_id", ionSite.ion.get_label_alt_id()},
-					{"pdbx_ptnr2_PDB_ins_code", ionSite.ion.get_pdb_ins_code()},
-					{"ptnr2_auth_asym_id", ionSite.ion.get_auth_asym_id()},
-					{"ptnr2_auth_comp_id", ionSite.ion.get_label_comp_id()},
-					{"ptnr2_auth_seq_id", ionSite.ion.get_auth_seq_id()},
-					{"ptnr2_symmetry", symop},
+					{ "ptnr2_label_asym_id", ionSite.ion.get_label_asym_id() },
+					{ "ptnr2_label_comp_id", ionSite.ion.get_label_comp_id() },
+					{ "ptnr2_label_seq_id", "?" },
+					{ "ptnr2_label_atom_id", ionSite.ion.get_label_atom_id() },
+					{ "pdbx_ptnr2_label_alt_id", ionSite.ion.get_label_alt_id() },
+					{ "pdbx_ptnr2_PDB_ins_code", ionSite.ion.get_pdb_ins_code() },
+					{ "ptnr2_auth_asym_id", ionSite.ion.get_auth_asym_id() },
+					{ "ptnr2_auth_comp_id", ionSite.ion.get_label_comp_id() },
+					{ "ptnr2_auth_seq_id", ionSite.ion.get_auth_seq_id() },
+					{ "ptnr2_symmetry", symop },
 
-					{"pdbx_dist_value", distance}});
+					{ "pdbx_dist_value", distance } });
 			}
 		}
 	}
@@ -895,22 +886,20 @@ int pr_main(int argc, char *argv[])
 	// -----------------------------------------------------------------------
 
 	auto &software = db["software"];
-	software.emplace({
-        { "pdbx_ordinal", software.get_unique_id("") },
-        { "name", "platonyzer" },
-        { "version", kVersionNumber },
-        { "date", kBuildDate},
-        { "classification", "other" }
-    });
+	software.emplace({ { "pdbx_ordinal", software.get_unique_id("") },
+		{ "name", "platonyzer" },
+		{ "version", kVersionNumber },
+		{ "date", kBuildDate },
+		{ "classification", "other" } });
 
 	pdb.save(outfile);
 
 	pdb_redo::SkipListFormat fmt;
-	if (vm["skip-list-format"].as<std::string>() == "old")
+	if (config.get<std::string>("skip-list-format") == "old")
 		fmt = pdb_redo::SkipListFormat::OLD;
-	else if (vm["skip-list-format"].as<std::string>() == "json")
+	else if (config.get<std::string>("skip-list-format") == "json")
 		fmt = pdb_redo::SkipListFormat::JSON;
-	else if (vm["skip-list-format"].as<std::string>() == "cif")
+	else if (config.get<std::string>("skip-list-format") == "cif")
 		fmt = pdb_redo::SkipListFormat::CIF;
 
 	writeSkipList(outfile_extra.replace_extension(".skip-waters"), waters, fmt);
