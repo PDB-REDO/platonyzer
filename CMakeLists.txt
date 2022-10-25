@@ -38,6 +38,7 @@ include(CMakePackageConfigHelpers)
 include(Dart)
 include(FindFilesystem)
 include(GenerateExportHeader)
+include(AddGitSubmodule)
 
 set(CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
@@ -126,6 +127,8 @@ if(USE_RSRC STREQUAL "ON")
 endif()
 
 # libraries
+
+add_git_submodule(gxrio EXCLUDE_FROM_ALL)
 
 find_package(pdb-redo 2.0.2 REQUIRED)
 find_package(Boost COMPONENTS program_options REQUIRED)
