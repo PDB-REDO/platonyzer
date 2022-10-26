@@ -38,6 +38,7 @@ include(CMakePackageConfigHelpers)
 include(Dart)
 include(FindFilesystem)
 include(GenerateExportHeader)
+include(AddGitSubmodule)
 
 set(CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
@@ -127,12 +128,14 @@ endif()
 
 # libraries
 
+add_git_submodule(gxrio EXCLUDE_FROM_ALL)
+add_git_submodule(libconfig EXCLUDE_FROM_ALL)
+
 find_package(pdb-redo 2.0.2 REQUIRED)
-find_package(Boost COMPONENTS program_options REQUIRED)
 
 if(USE_RSRC)
 	add_custom_command(OUTPUT platonyzer_rsrc.obj
-		COMMAND ${MRC} -o platonyzer_rsrc.obj ${CIFPP_SHARE_DIR}/mmcif_pdbx_v50.dic ${COFF_SPEC}
+		COMMAND ${MRC} -o platonyzer_rsrc.obj ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${COFF_SPEC}
 	)
 
 	set(platonyzer_RESOURCE platonyzer_rsrc.obj)
@@ -143,7 +146,7 @@ add_executable(platonyzer
 	${platonyzer_RESOURCE})
 
 target_include_directories(platonyzer PRIVATE pdb-redo::pdb-redo ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR})
-target_link_libraries(platonyzer PRIVATE pdb-redo::pdb-redo std::filesystem Boost::program_options)
+target_link_libraries(platonyzer PRIVATE pdb-redo::pdb-redo std::filesystem gxrio::gxrio libconfig::libconfig)
 
 install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${BIN_INSTALL_DIR}
