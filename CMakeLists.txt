@@ -129,8 +129,8 @@ endif()
 # libraries
 
 add_git_submodule(gxrio EXCLUDE_FROM_ALL)
-add_git_submodule(libconfig EXCLUDE_FROM_ALL)
 
+find_package(libconfig REQUIRED)
 find_package(pdb-redo 2.0.2 REQUIRED)
 
 if(USE_RSRC)
