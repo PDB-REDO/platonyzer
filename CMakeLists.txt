@@ -77,33 +77,6 @@ if(MSVC)
 
 	get_WIN32_WINNT(ver)
 	add_definitions(-D_WIN32_WINNT=${ver})
-
-	# On Windows, do not install in the system location
-	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT BUILD_FOR_CCP4)
-		message(STATUS "The library and auxiliary files will be installed in $ENV{LOCALAPPDATA}/${PROJECT_NAME}")
-		set(CMAKE_INSTALL_PREFIX "$ENV{LOCALAPPDATA}/${PROJECT_NAME}" CACHE PATH "..." FORCE)
-	endif()
-
-	# Find out the processor type for the target
-	if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
-		set(COFF_TYPE "x64")
-	elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386")
-		set(COFF_TYPE "x86")
-	elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ARM64")
-		set(COFF_TYPE "arm64")
-	else()
-		message(FATAL_ERROR "Unsupported or unknown processor type ${CMAKE_SYSTEM_PROCESSOR}")
-	endif()	
-
-	set(COFF_SPEC "--coff=${COFF_TYPE}")
-endif()
-
-if(UNIX AND NOT APPLE)
-	# On Linux, install in the $HOME/.local folder by default
-	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-		message(WARNING "The library and auxiliary files will be installed in $ENV{HOME}/.local")
-		set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "..." FORCE)
-	endif()
 endif()
 
 # Create a revision file, containing the current git version info
@@ -111,39 +84,37 @@ include(VersionString)
 write_version_header()
 
 # Optionally use mrc to create resources
-find_program(MRC mrc HINTS "$ENV{LOCALAPPDATA}/mrc" "$ENV{LOCALAPPDATA}/mrc/bin" "${CMAKE_INSTALL_PREFIX}/../mrc" "/usr/local/bin")
+find_package(Mrc)
 
-if(MRC)
+if(MRC_FOUND)
 	option(USE_RSRC "Use mrc to create resources" ON)
 else()
-	message(WARNING "Not using resources since mrc was not found")
+	message(STATUS "Not using resources since mrc was not found")
 endif()
 
-if(USE_RSRC STREQUAL "ON")
+if(USE_RSRC)
 	set(USE_RSRC 1)
 
-	message("Using resources compiled with ${MRC}")
+	message("Using resources compiled with ${MRC_EXECUTABLE}")
 	add_compile_definitions(USE_RSRC)
+
+	mrc_write_header(${CMAKE_BINARY_DIR}/mrsrc.hpp)
 endif()
 
 # libraries
 
 find_package(pdb-redo 2.0.2 REQUIRED)
 
-if(USE_RSRC)
-	add_custom_command(OUTPUT platonyzer_rsrc.obj
-		COMMAND ${MRC} -o platonyzer_rsrc.obj ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${COFF_SPEC}
-	)
-
-	set(platonyzer_RESOURCE platonyzer_rsrc.obj)
-endif()
-
 add_executable(platonyzer
 	${PROJECT_SOURCE_DIR}/src/platonyzer.cpp
 	${platonyzer_RESOURCE})
 
-target_include_directories(platonyzer PRIVATE pdb-redo::pdb-redo ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR})
+target_include_directories(platonyzer PRIVATE ${CMAKE_BINARY_DIR})
 target_link_libraries(platonyzer PRIVATE pdb-redo::pdb-redo std::filesystem gxrio::gxrio libconfig::libconfig)
+
+if(USE_RSRC)
+	mrc_target_resources(platonyzer ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic)
+endif()
 
 install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${BIN_INSTALL_DIR}
