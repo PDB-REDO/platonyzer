@@ -49,24 +49,25 @@ find_package(Filesystem REQUIRED)
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
 elseif(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 endif()
 
 if(NOT "$ENV{CCP4}" STREQUAL "")
 	set(CCP4 $ENV{CCP4})
 	list(PREPEND CMAKE_MODULE_PATH "${CCP4}/Lib")
 	list(APPEND CMAKE_PREFIX_PATH ${CCP4})
+
 	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 		set(CMAKE_PREFIX_PATH ${CCP4})
 	endif()
 endif()
 
 if(MSVC)
-    # make msvc standards compliant...
-    add_compile_options(/permissive-)
+	# make msvc standards compliant...
+	add_compile_options(/permissive-)
 
 	macro(get_WIN32_WINNT version)
-		if (WIN32 AND CMAKE_SYSTEM_VERSION)
+		if(WIN32 AND CMAKE_SYSTEM_VERSION)
 			set(ver ${CMAKE_SYSTEM_VERSION})
 			string(REPLACE "." "" ver ${ver})
 			string(REGEX REPLACE "([0-9])" "0\\1" ver ${ver})
@@ -102,8 +103,9 @@ if(USE_RSRC)
 endif()
 
 # libraries
-
-find_package(pdb-redo 2.0.2 REQUIRED)
+if(NOT PDB_REDO_META)
+	find_package(pdb-redo 2.0.2 REQUIRED)
+endif()
 
 add_executable(platonyzer
 	${PROJECT_SOURCE_DIR}/src/platonyzer.cpp
@@ -117,17 +119,17 @@ if(USE_RSRC)
 endif()
 
 install(TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION ${BIN_INSTALL_DIR}
+	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
 )
 
 # # manual
 
 # if(UNIX)
-# 	install(FILES doc/platonyzer.1
-# 		DESTINATION ${CMAKE_INSTALL_DATADIR}/man/man1)
+# install(FILES doc/platonyzer.1
+# DESTINATION ${CMAKE_INSTALL_DATADIR}/man/man1)
 # endif()
 
 # if(EXISTS "${CCP4}/html")
-# 	install(FILES doc/platonyzer.html
-# 		DESTINATION ${CCP4}/html)
+# install(FILES doc/platonyzer.html
+# DESTINATION ${CCP4}/html)
 # endif()
