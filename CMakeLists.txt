@@ -98,7 +98,7 @@ if(USE_RSRC)
 	message("Using resources compiled with ${MRC_EXECUTABLE}")
 	add_compile_definitions(USE_RSRC)
 
-	mrc_write_header(${CMAKE_BINARY_DIR}/mrsrc.hpp)
+	mrc_write_header(${PROJECT_BINARY_DIR}/mrsrc.hpp)
 endif()
 
 # libraries
@@ -109,7 +109,7 @@ add_executable(platonyzer
 	${PROJECT_SOURCE_DIR}/src/platonyzer.cpp
 	${platonyzer_RESOURCE})
 
-target_include_directories(platonyzer PRIVATE ${CMAKE_BINARY_DIR})
+target_include_directories(platonyzer PRIVATE ${PROJECT_BINARY_DIR})
 target_link_libraries(platonyzer PRIVATE pdb-redo::pdb-redo std::filesystem gxrio::gxrio libconfig::libconfig)
 
 if(USE_RSRC)
