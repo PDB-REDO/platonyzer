@@ -311,7 +311,7 @@ bool findZincSites(cif::mm::structure &structure, cif::datablock &db, int spaceg
 		{
 			auto &aa = std::get<0>(*a);
 
-			auto ad = std::get<1>(*a);
+			[[maybe_unused]] auto ad = std::get<1>(*a);
 
 			for (auto b = std::next(a); b != zs.lig.end(); ++b)
 			{
@@ -321,7 +321,7 @@ bool findZincSites(cif::mm::structure &structure, cif::datablock &db, int spaceg
 					aa.get_label_seq_id() != ba.get_label_seq_id() or aa.get_label_asym_id() != ba.get_label_asym_id() or aa.symmetry() != ba.symmetry())
 					continue;
 
-				auto bd = std::get<1>(*b);
+				[[maybe_unused]] auto bd = std::get<1>(*b);
 				assert(bd > ad);
 
 				zs.lig.erase(b);
@@ -893,7 +893,7 @@ int pr_main(int argc, char *argv[])
 
 	pdb.save(outfile);
 
-	pdb_redo::SkipListFormat fmt;
+	pdb_redo::SkipListFormat fmt = pdb_redo::SkipListFormat::CIF;
 	if (config.get<std::string>("skip-list-format") == "old")
 		fmt = pdb_redo::SkipListFormat::OLD;
 	else if (config.get<std::string>("skip-list-format") == "json")
