@@ -104,6 +104,9 @@ endif()
 
 # libraries
 if(NOT PDB_REDO_META)
+	find_package(gxrio REQUIRED)
+	find_package(libconfig REQUIRED)
+	find_package(newuoa REQUIRED)
 	find_package(pdb-redo 2.0.2 REQUIRED)
 endif()
 
