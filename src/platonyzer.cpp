@@ -31,7 +31,6 @@
 
 #include <cfp/cfp.hpp>
 #include <cif++.hpp>
-#include <gxrio.hpp>
 
 #include <pdb-redo/SkipList.hpp>
 #include <pdb-redo/Symmetry-2.hpp>
