@@ -29,7 +29,7 @@
 #include <iomanip>
 #include <unordered_set>
 
-#include <cfg.hpp>
+#include <cfp/cfp.hpp>
 #include <cif++.hpp>
 #include <gxrio.hpp>
 
@@ -727,17 +727,17 @@ int pr_main(int argc, char *argv[])
 
 	int result = 0;
 
-	auto &config = cfg::config::instance();
+	auto &config = cfp::config::instance();
 
 	config.init("platonyzer [options] inputfile outputfile]",
-		cfg::make_option("help,h", "Display help message"),
-		cfg::make_option("version", "Print version"),
-		cfg::make_option("verbose,v", "Verbose output"),
-		cfg::make_option<std::string>("skip-list-format", "old", "Format to use for the skip lists, one of 'old', 'json' or 'cif'"),
-		cfg::make_option("delete-vdw-rest", "Delete vanderWaals restraints for octahedral ions in the external for Refmac"),
-		cfg::make_option("create-na-mg-links", "Create links for Na/Mg ion sites that were found"),
+		cfp::make_option("help,h", "Display help message"),
+		cfp::make_option("version", "Print version"),
+		cfp::make_option("verbose,v", "Verbose output"),
+		cfp::make_option<std::string>("skip-list-format", "old", "Format to use for the skip lists, one of 'old', 'json' or 'cif'"),
+		cfp::make_option("delete-vdw-rest", "Delete vanderWaals restraints for octahedral ions in the external for Refmac"),
+		cfp::make_option("create-na-mg-links", "Create links for Na/Mg ion sites that were found"),
 		// ( "pdb<std::string>-redo-data", "The PDB-REDO dat file" /*, default is the built in one"*/),
-		cfg::make_option<std::string>("dict", "Dictionary file containing restraints for residues in this specific target"));
+		cfp::make_option<std::string>("dict", "Dictionary file containing restraints for residues in this specific target"));
 
 	config.parse(argc, argv);
 
