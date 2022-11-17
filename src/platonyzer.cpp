@@ -732,7 +732,7 @@ int pr_main(int argc, char *argv[])
 		cfp::make_option("help,h", "Display help message"),
 		cfp::make_option("version", "Print version"),
 		cfp::make_option("verbose,v", "Verbose output"),
-		cfp::make_option<std::string>("skip-list-format", "old", "Format to use for the skip lists, one of 'old', 'json' or 'cif'"),
+		cfp::make_option<std::string>("skip-list-format", "old", "Format to use for the skip lists, one of 'old' or 'cif'"),
 		cfp::make_option("delete-vdw-rest", "Delete vanderWaals restraints for octahedral ions in the external for Refmac"),
 		cfp::make_option("create-na-mg-links", "Create links for Na/Mg ion sites that were found"),
 		// ( "pdb<std::string>-redo-data", "The PDB-REDO dat file" /*, default is the built in one"*/),
@@ -895,8 +895,6 @@ int pr_main(int argc, char *argv[])
 	pdb_redo::SkipListFormat fmt = pdb_redo::SkipListFormat::CIF;
 	if (config.get<std::string>("skip-list-format") == "old")
 		fmt = pdb_redo::SkipListFormat::OLD;
-	else if (config.get<std::string>("skip-list-format") == "json")
-		fmt = pdb_redo::SkipListFormat::JSON;
 	else if (config.get<std::string>("skip-list-format") == "cif")
 		fmt = pdb_redo::SkipListFormat::CIF;
 
