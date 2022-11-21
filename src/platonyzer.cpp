@@ -890,7 +890,7 @@ int pr_main(int argc, char *argv[])
 		{ "date", kBuildDate },
 		{ "classification", "other" } });
 
-	pdb.save(outfile);
+	cif::pdb::write(outfile, pdb);
 
 	pdb_redo::SkipListFormat fmt = pdb_redo::SkipListFormat::CIF;
 	if (config.get<std::string>("skip-list-format") == "old")
