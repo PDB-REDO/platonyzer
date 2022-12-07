@@ -31,7 +31,6 @@
 
 #include <mcfp/mcfp.hpp>
 #include <cif++.hpp>
-#include <gxrio.hpp>
 
 #include <pdb-redo/SkipList.hpp>
 #include <pdb-redo/Symmetry-2.hpp>
@@ -331,7 +330,7 @@ bool findZincSites(cif::mm::structure &structure, cif::datablock &db, int spaceg
 
 		// -----------------------------------------------------------------------
 
-		if (cif::VERBOSE)
+		if (cif::VERBOSE > 0)
 		{
 			std::cerr << "preliminary cluster: " << std::endl
 					  << " zn: " << zs.ion.get_label_asym_id() << '/' << zs.ion.get_label_atom_id() << " (" << zs.ion.pdb_id() << ')' << std::endl;
@@ -353,12 +352,12 @@ bool findZincSites(cif::mm::structure &structure, cif::datablock &db, int spaceg
 			auto range = std::get<1>(zs.lig[4]) - std::get<1>(zs.lig[0]);
 			if ((gap / range) < kDixonQTest95Perc5Points)
 			{
-				if (cif::VERBOSE)
+				if (cif::VERBOSE > 0)
 					std::cerr << "Rejecting cluster since there are 5 or more atoms near by and nr 5 is not considered to be an outlier" << std::endl;
 				break;
 			}
 
-			if (cif::VERBOSE)
+			if (cif::VERBOSE > 0)
 			{
 				for (std::size_t i = 4; i < zs.lig.size(); ++i)
 				{
@@ -372,7 +371,7 @@ bool findZincSites(cif::mm::structure &structure, cif::datablock &db, int spaceg
 
 		if (zs.lig.size() == 4)
 			result = true;
-		else if (cif::VERBOSE)
+		else if (cif::VERBOSE > 0)
 			std::cerr << "Rejecting cluster since there are not 4 atoms near by" << std::endl;
 
 		break;
@@ -514,7 +513,7 @@ bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, int 
 
 		// -----------------------------------------------------------------------
 
-		if (cif::VERBOSE)
+		if (cif::VERBOSE > 0)
 		{
 			std::cerr << "preliminary cluster: " << std::endl
 					  << " metal: " << is.ion << std::endl;
@@ -542,7 +541,7 @@ bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, int 
 					assert(aa.get_label_atom_id() == "NE2");
 					auto o = structure.get_atom_by_label("OE1", aa.get_label_asym_id(), "GLN", aa.get_label_seq_id(), aa.get_label_alt_id());
 
-					if (cif::VERBOSE)
+					if (cif::VERBOSE > 0)
 						std::cerr << "Flipping side chain for GLN "
 								  << " " << aa.get_label_asym_id() << aa.get_label_seq_id() << " (" << aa.pdb_id() << ')' << std::endl;
 
@@ -555,7 +554,7 @@ bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, int 
 					assert(aa.get_label_atom_id() == "ND2");
 					auto o = structure.get_atom_by_label("OD1", aa.get_label_asym_id(), "ASN", aa.get_label_seq_id(), aa.get_label_alt_id());
 
-					if (cif::VERBOSE)
+					if (cif::VERBOSE > 0)
 						std::cerr << "Flipping side chain for ASN "
 								  << " " << aa.get_label_asym_id() << aa.get_label_seq_id() << " (" << aa.pdb_id() << ')' << std::endl;
 
@@ -565,7 +564,7 @@ bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, int 
 			}
 			catch (const std::out_of_range &ex)
 			{
-				if (cif::VERBOSE)
+				if (cif::VERBOSE > 0)
 					std::cerr << "Could not flip " << aa.get_label_comp_id() << ": " << ex.what() << std::endl;
 
 				// is.lig.clear();	// give up
@@ -578,7 +577,7 @@ bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, int 
 
 		if (is.lig.size() < 6 or is.lig.size() > 9)
 		{
-			if (cif::VERBOSE)
+			if (cif::VERBOSE > 0)
 				std::cerr << "Rejecting cluster since the number of atoms is not reasonable" << std::endl;
 			break;
 		}
@@ -604,7 +603,7 @@ bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, int 
 			if (G < get_t_90(is.lig.size()))
 				break;
 
-			if (cif::VERBOSE)
+			if (cif::VERBOSE > 0)
 			{
 				auto &a = std::get<0>(is.lig.back());
 				std::cerr << "Removing outlier " << a.get_label_asym_id() << a.get_label_seq_id() << '/' << a.get_label_atom_id() << " (" << a.pdb_id() << ')' << ' ' << a.symmetry() << " @ " << std::get<1>(is.lig.back()) << std::endl;
@@ -615,7 +614,7 @@ bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, int 
 
 		if (not is.isOctaHedral())
 		{
-			if (cif::VERBOSE)
+			if (cif::VERBOSE > 0)
 				std::cerr << "Rejecting cluster since it is not an octahedral" << std::endl;
 			break;
 		}
@@ -760,14 +759,14 @@ int pr_main(int argc, char *argv[])
 
 	cif::VERBOSE = config.count("verbose");
 
-	if (cif::VERBOSE)
+	if (cif::VERBOSE > 0)
 		std::cerr << "Loading data...";
 
 	fs::path input = config.operands().front();
 	cif::file pdb = cif::pdb::read(input);
 	cif::mm::structure structure(pdb);
 
-	if (cif::VERBOSE)
+	if (cif::VERBOSE > 0)
 		std::cerr << " done" << std::endl;
 
 	auto &db = pdb.front();
@@ -878,7 +877,7 @@ int pr_main(int argc, char *argv[])
 
 	// -----------------------------------------------------------------------
 
-	if (cif::VERBOSE)
+	if (cif::VERBOSE > 0)
 		std::cerr << "Removed " << removedLinks << " link records" << std::endl
 				  << "Created " << createdLinks << " link records" << std::endl;
 
@@ -891,7 +890,7 @@ int pr_main(int argc, char *argv[])
 		{ "date", kBuildDate },
 		{ "classification", "other" } });
 
-	pdb.save(outfile);
+	cif::pdb::write(outfile, pdb);
 
 	pdb_redo::SkipListFormat fmt = pdb_redo::SkipListFormat::CIF;
 	if (config.get<std::string>("skip-list-format") == "old")
