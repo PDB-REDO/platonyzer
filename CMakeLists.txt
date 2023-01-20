@@ -85,7 +85,7 @@ include(VersionString)
 write_version_header()
 
 # Optionally use mrc to create resources
-find_package(Mrc)
+find_package(Mrc QUIET)
 
 if(MRC_FOUND)
 	option(USE_RSRC "Use mrc to create resources" ON)
