@@ -33,7 +33,6 @@
 #include <cif++.hpp>
 
 #include <pdb-redo/SkipList.hpp>
-#include <pdb-redo/Symmetry-2.hpp>
 
 #include "revision.hpp"
 
@@ -282,7 +281,7 @@ bool IonSite::isOctaHedral()
 
 // -----------------------------------------------------------------------
 
-bool findZincSites(cif::mm::structure &structure, cif::datablock &db, int spacegroup, const clipper::Cell &cell,
+bool findZincSites(cif::mm::structure &structure, cif::datablock &db, const cif::spacegroup &sg, const cif::cell &c,
 	IonSite &zs, const std::string &altID)
 {
 	bool result = false;
@@ -380,12 +379,9 @@ bool findZincSites(cif::mm::structure &structure, cif::datablock &db, int spaceg
 	return result;
 }
 
-std::vector<IonSite> findZincSites(cif::mm::structure &structure, cif::datablock &db, int spacegroup, const clipper::Cell &cell)
+std::vector<IonSite> findZincSites(cif::mm::structure &structure, cif::datablock &db, const cif::spacegroup &spacegroup, const cif::cell &cell)
 {
 	std::vector<IonSite> result;
-
-	// factory for symmetry atom iterators
-	pdb_redo::SymmetryAtomIteratorFactory saif(structure, spacegroup, cell);
 
 	for (auto atom : structure.atoms())
 	{
@@ -400,25 +396,21 @@ std::vector<IonSite> findZincSites(cif::mm::structure &structure, cif::datablock
 		{
 			if (a.get_label_comp_id() == "HIS" and (a.get_label_atom_id() == "ND1" or a.get_label_atom_id() == "NE2"))
 			{
-				for (auto sa : saif(a, [al = atom.get_location()](const cif::point &pt)
-						 { return distance(al, pt) <= kMaxZnHisDistanceInCluster; }))
-				{
-					float d = distance(atom, sa);
-					assert(d <= kMaxZnHisDistanceInCluster);
-					zs.lig.emplace_back(sa, d, sa.symmetry());
-				}
+				const auto &[d, p, so] = cif::closest_symmetry_copy(spacegroup, cell, atom.get_location(), a.get_location());
+
+				if (d <= kMaxZnHisDistanceInCluster)
+					zs.lig.emplace_back(cif::mm::atom(a, p, so.string()), d, so.string());
+
 				continue;
 			}
 
 			if (a.get_label_comp_id() == "CYS" and a.get_label_atom_id() == "SG")
 			{
-				for (auto sa : saif(a, [al = atom.get_location()](const cif::point &pt)
-						 { return distance(al, pt) <= kMaxZnCysDistanceInCluster; }))
-				{
-					float d = distance(atom, sa);
-					assert(d <= kMaxZnCysDistanceInCluster);
-					zs.lig.emplace_back(sa, d, sa.symmetry());
-				}
+				const auto &[d, p, so] = cif::closest_symmetry_copy(spacegroup, cell, atom.get_location(), a.get_location());
+
+				if (d <= kMaxZnCysDistanceInCluster)
+					zs.lig.emplace_back(cif::mm::atom(a, p, so.string()), d, so.string());
+
 				continue;
 			}
 		}
@@ -463,7 +455,7 @@ constexpr float get_t_90(std::size_t N)
 	return t_dist_90[N - 3];
 }
 
-bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, int spacegroup, const clipper::Cell &cell,
+bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, const cif::spacegroup &sg, const cif::cell &c,
 	IonSite &is, const std::string &altID)
 {
 	bool result = false;
@@ -626,12 +618,9 @@ bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, int 
 	return result;
 }
 
-std::vector<IonSite> findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, int spacegroup, const clipper::Cell &cell)
+std::vector<IonSite> findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, const cif::spacegroup &spacegroup, const cif::cell &cell)
 {
 	std::vector<IonSite> result;
-
-	// factory for symmetry atom iterators
-	pdb_redo::SymmetryAtomIteratorFactory saif(structure, spacegroup, cell);
 
 	for (auto atom : structure.atoms())
 	{
@@ -654,14 +643,10 @@ std::vector<IonSite> findOctahedralSites(cif::mm::structure &structure, cif::dat
 				a.get_type() == cif::atom_type::O or
 				a.get_type() == cif::atom_type::N)
 			{
-				// for (auto sa: saif(a))
-				for (auto sa : saif(a, [al = atom.get_location()](const cif::point &pt)
-						 { return distance(al, pt) <= kMaxMetalLigandDistance; }))
-				{
-					float d = distance(atom, sa);
-					assert(d <= kMaxMetalLigandDistance);
-					is.lig.emplace_back(sa, d, sa.symmetry());
-				}
+				const auto &[d, p, so] = cif::closest_symmetry_copy(spacegroup, cell, atom.get_location(), a.get_location());
+
+				if (d <= kMaxMetalLigandDistance)
+					is.lig.emplace_back(cif::mm::atom(a, p, so.string()), d, so.string());
 			}
 		}
 
@@ -777,13 +762,8 @@ int pr_main(int argc, char *argv[])
 	if (entryId.empty())
 		throw std::runtime_error("Missing _entry.id in coordinates file");
 
-	const auto &[a, b, c, alpha, beta, gamma] = db["cell"].find1<double, double, double, double, double, double>("entry_id"_key == entryId,
-		"length_a", "length_b", "length_c", "angle_alpha", "angle_beta", "angle_gamma");
-
-	clipper::Cell cell(clipper::Cell_descr(a, b, c, alpha, beta, gamma));
-
-	std::string spacegroupName = db["symmetry"].find1<std::string>("entry_id"_key == entryId, "space_group_name_H-M");
-	int spacegroupNr = cif::get_space_group_number(spacegroupName);
+	cif::spacegroup spacegroup(db);
+	cif::cell cell(db);
 
 	// -----------------------------------------------------------------------
 
@@ -802,8 +782,8 @@ int pr_main(int argc, char *argv[])
 	pdb_redo::SkipList waters, pepflipO, pepflipN, sideaid;
 
 	for (auto &ionSites : {
-			 findZincSites(structure, db, spacegroupNr, cell),
-			 findOctahedralSites(structure, db, spacegroupNr, cell) })
+			 findZincSites(structure, db, spacegroup, cell),
+			 findOctahedralSites(structure, db, spacegroup, cell) })
 	{
 		for (auto ionSite : ionSites)
 		{
