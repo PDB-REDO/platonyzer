@@ -281,7 +281,7 @@ bool IonSite::isOctaHedral()
 
 // -----------------------------------------------------------------------
 
-bool findZincSites(cif::mm::structure &structure, cif::datablock &db, const cif::spacegroup &sg, const cif::cell &c,
+bool findZincSites(cif::mm::structure &structure, cif::datablock &db, const cif::crystal &crystal,
 	IonSite &zs, const std::string &altID)
 {
 	bool result = false;
@@ -379,7 +379,7 @@ bool findZincSites(cif::mm::structure &structure, cif::datablock &db, const cif:
 	return result;
 }
 
-std::vector<IonSite> findZincSites(cif::mm::structure &structure, cif::datablock &db, const cif::spacegroup &spacegroup, const cif::cell &cell)
+std::vector<IonSite> findZincSites(cif::mm::structure &structure, cif::datablock &db, const cif::crystal &crystal)
 {
 	std::vector<IonSite> result;
 
@@ -396,7 +396,7 @@ std::vector<IonSite> findZincSites(cif::mm::structure &structure, cif::datablock
 		{
 			if (a.get_label_comp_id() == "HIS" and (a.get_label_atom_id() == "ND1" or a.get_label_atom_id() == "NE2"))
 			{
-				const auto &[d, p, so] = cif::closest_symmetry_copy(spacegroup, cell, atom.get_location(), a.get_location());
+				const auto &[d, p, so] = crystal.closest_symmetry_copy(atom.get_location(), a.get_location());
 
 				if (d <= kMaxZnHisDistanceInCluster)
 					zs.lig.emplace_back(cif::mm::atom(a, p, so.string()), d, so.string());
@@ -406,7 +406,7 @@ std::vector<IonSite> findZincSites(cif::mm::structure &structure, cif::datablock
 
 			if (a.get_label_comp_id() == "CYS" and a.get_label_atom_id() == "SG")
 			{
-				const auto &[d, p, so] = cif::closest_symmetry_copy(spacegroup, cell, atom.get_location(), a.get_location());
+				const auto &[d, p, so] = crystal.closest_symmetry_copy(atom.get_location(), a.get_location());
 
 				if (d <= kMaxZnCysDistanceInCluster)
 					zs.lig.emplace_back(cif::mm::atom(a, p, so.string()), d, so.string());
@@ -428,7 +428,7 @@ std::vector<IonSite> findZincSites(cif::mm::structure &structure, cif::datablock
 		for (auto &alt : altIDs)
 		{
 			IonSite azs = zs;
-			if (findZincSites(structure, db, spacegroup, cell, azs, alt))
+			if (findZincSites(structure, db, crystal, azs, alt))
 				result.emplace_back(std::move(azs));
 		}
 	}
@@ -455,7 +455,7 @@ constexpr float get_t_90(std::size_t N)
 	return t_dist_90[N - 3];
 }
 
-bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, const cif::spacegroup &sg, const cif::cell &c,
+bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, const cif::crystal &crystal,
 	IonSite &is, const std::string &altID)
 {
 	bool result = false;
@@ -618,7 +618,7 @@ bool findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, cons
 	return result;
 }
 
-std::vector<IonSite> findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, const cif::spacegroup &spacegroup, const cif::cell &cell)
+std::vector<IonSite> findOctahedralSites(cif::mm::structure &structure, cif::datablock &db, const cif::crystal &crystal)
 {
 	std::vector<IonSite> result;
 
@@ -643,7 +643,7 @@ std::vector<IonSite> findOctahedralSites(cif::mm::structure &structure, cif::dat
 				a.get_type() == cif::atom_type::O or
 				a.get_type() == cif::atom_type::N)
 			{
-				const auto &[d, p, so] = cif::closest_symmetry_copy(spacegroup, cell, atom.get_location(), a.get_location());
+				const auto &[d, p, so] = crystal.closest_symmetry_copy(atom.get_location(), a.get_location());
 
 				if (d <= kMaxMetalLigandDistance)
 					is.lig.emplace_back(cif::mm::atom(a, p, so.string()), d, so.string());
@@ -663,7 +663,7 @@ std::vector<IonSite> findOctahedralSites(cif::mm::structure &structure, cif::dat
 		for (auto &alt : altIDs)
 		{
 			IonSite ais = is;
-			if (findOctahedralSites(structure, db, spacegroup, cell, ais, alt))
+			if (findOctahedralSites(structure, db, crystal, ais, alt))
 				result.emplace_back(std::move(ais));
 		}
 	}
@@ -762,8 +762,7 @@ int pr_main(int argc, char *argv[])
 	if (entryId.empty())
 		throw std::runtime_error("Missing _entry.id in coordinates file");
 
-	cif::spacegroup spacegroup(db);
-	cif::cell cell(db);
+	cif::crystal crystal(db);
 
 	// -----------------------------------------------------------------------
 
@@ -782,8 +781,8 @@ int pr_main(int argc, char *argv[])
 	pdb_redo::SkipList waters, pepflipO, pepflipN, sideaid;
 
 	for (auto &ionSites : {
-			 findZincSites(structure, db, spacegroup, cell),
-			 findOctahedralSites(structure, db, spacegroup, cell) })
+			 findZincSites(structure, db, crystal),
+			 findOctahedralSites(structure, db, crystal) })
 	{
 		for (auto ionSite : ionSites)
 		{

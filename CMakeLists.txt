@@ -114,7 +114,7 @@ add_executable(platonyzer
 	${platonyzer_RESOURCE})
 
 target_include_directories(platonyzer PRIVATE ${PROJECT_BINARY_DIR})
-target_link_libraries(platonyzer PRIVATE pdb-redo::pdb-redo std::filesystem libmcfp::libmcfp)
+target_link_libraries(platonyzer PRIVATE pdb-redo::pdb-redo std::filesystem libmcfp::libmcfp -static-libgcc -static-libstdc++)
 
 if(USE_RSRC)
 	mrc_target_resources(platonyzer ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic)
