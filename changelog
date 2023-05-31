@@ -1,2 +1,5 @@
+Version 2.0.3
+- Using new symmetry operations from libcifpp
+
 Version 2.0.2
 - Based on new libcifpp
