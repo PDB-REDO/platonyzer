@@ -9,9 +9,12 @@ Installation
 
 To install, first install [`libcifpp`](https://github.com/PDB-REDO/libcifpp) and [`libpdb-redo`](https://github.com/PDB-REDO/libpdb-redo) then use
 
-```
-./configure
-make
-sudo make install
+```bash
+git clone https://github.com/PDB-REDO/platonyzer.git
+cd platonyzer
+mkdir build
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+sudo cmake --install build
 ```
 
