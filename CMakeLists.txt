@@ -82,7 +82,7 @@ endif()
 
 # Create a revision file, containing the current git version info
 include(VersionString)
-write_version_header("${CMAKE_SOURCE_DIR}/src")
+write_version_header("${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # Optionally use mrc to create resources
 find_package(Mrc QUIET)
