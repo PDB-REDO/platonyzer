@@ -863,10 +863,11 @@ int pr_main(int argc, char *argv[])
 	// -----------------------------------------------------------------------
 
 	auto &software = db["software"];
-	software.emplace({ { "pdbx_ordinal", software.get_unique_id("") },
+	software.emplace({
+		{ "pdbx_ordinal", software.get_unique_id("") },
 		{ "name", "platonyzer" },
 		{ "version", kVersionNumber },
-		{ "date", kBuildDate },
+		{ "date", kRevisionDate },
 		{ "classification", "other" } });
 
 	cif::pdb::write(outfile, pdb);
