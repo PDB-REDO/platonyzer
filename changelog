@@ -1,3 +1,7 @@
+Version 2.0.4
+- New version string module
+- fix for building as sub project
+
 Version 2.0.3
 - Using new symmetry operations from libcifpp
 
