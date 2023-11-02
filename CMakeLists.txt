@@ -36,7 +36,6 @@ include(CheckIncludeFiles)
 include(CheckLibraryExists)
 include(CMakePackageConfigHelpers)
 include(FindFilesystem)
-include(GenerateExportHeader)
 
 set(CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
@@ -63,6 +62,7 @@ endif()
 if(MSVC)
 	# make msvc standards compliant...
 	add_compile_options(/permissive-)
+	add_link_options(/NODEFAULTLIB:library)
 
 	macro(get_WIN32_WINNT version)
 		if(WIN32 AND CMAKE_SYSTEM_VERSION)
@@ -112,7 +112,10 @@ add_executable(platonyzer
 	${platonyzer_RESOURCE})
 
 target_include_directories(platonyzer PRIVATE ${PROJECT_BINARY_DIR})
-target_link_libraries(platonyzer PRIVATE pdb-redo::pdb-redo std::filesystem libmcfp::libmcfp -static-libgcc -static-libstdc++)
+target_link_libraries(platonyzer PRIVATE pdb-redo::pdb-redo std::filesystem libmcfp::libmcfp)
+if(NOT MSVC AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	target_link_libraries(platonyzer PRIVATE -static-libgcc -static-libstdc++)
+endif()
 
 if(USE_RSRC)
 	mrc_target_resources(platonyzer ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic)
