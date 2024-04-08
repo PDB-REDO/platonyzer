@@ -101,9 +101,15 @@ if(USE_RSRC)
 endif()
 
 # libraries
-if(NOT PDB_REDO_META)
+if(NOT (libmcfp_FOUND OR TARGET libmcfp))
 	find_package(libmcfp REQUIRED)
+endif()
+
+if(NOT (newuoa_FOUND OR TARGET newuoa))
 	find_package(newuoa REQUIRED)
+endif()
+
+if(NOT (pdb-redo_FOUND OR TARGET pdb-redo))
 	find_package(pdb-redo 2.0.2 REQUIRED)
 endif()
 
