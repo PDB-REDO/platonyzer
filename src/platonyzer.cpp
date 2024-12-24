@@ -32,6 +32,7 @@
 #include <mcfp/mcfp.hpp>
 #include <cif++.hpp>
 
+#include <pdb-redo/Compound.hpp>
 #include <pdb-redo/SkipList.hpp>
 
 #include "revision.hpp"
@@ -720,8 +721,11 @@ int pr_main(int argc, char *argv[])
 		mcfp::make_option<std::string>("skip-list-format", "old", "Format to use for the skip lists, one of 'old', 'json' or 'cif'"),
 		mcfp::make_option("delete-vdw-rest", "Delete vanderWaals restraints for octahedral ions in the external for Refmac"),
 		mcfp::make_option("create-na-mg-links", "Create links for Na/Mg ion sites that were found"),
-		// ( "pdb<std::string>-redo-data", "The PDB-REDO dat file" /*, default is the built in one"*/),
-		mcfp::make_option<std::string>("dict", "Dictionary file containing restraints for residues in this specific target"));
+
+		mcfp::make_option<std::string>("restraint-dict", "File containing restraints for residues in this specific target, can be specified multiple times."),
+		mcfp::make_option<std::string>("ccd-dict", "Dictionary file containing information in CCD format for residues in this specific target, can be specified multiple times.")
+	
+	);
 
 	config.parse(argc, argv);
 
@@ -739,8 +743,11 @@ int pr_main(int argc, char *argv[])
 
 	// Load dict, if any
 
-	if (config.has("dict"))
-		cif::compound_factory::instance().push_dictionary(config.get<std::string>("dict"));
+	if (config.has("restraint-dict"))
+		pdb_redo::CompoundFactory::instance().pushDictionary(config.get<std::string>("restraint-dict"));
+
+	if (config.has("ccd-dict"))
+		cif::compound_factory::instance().push_dictionary(config.get<std::string>("ccd-dict"));
 
 	cif::VERBOSE = config.count("verbose");
 
