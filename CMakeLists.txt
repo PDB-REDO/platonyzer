@@ -117,8 +117,8 @@ if(USE_RSRC)
 endif()
 
 # libraries
-if(NOT (libmcfp_FOUND OR TARGET libmcfp))
-	find_package(libmcfp REQUIRED)
+if(NOT (mcfp_FOUND OR TARGET mcfp))
+	find_package(mcfp REQUIRED)
 endif()
 
 if(NOT (newuoa_FOUND OR TARGET newuoa))
@@ -134,7 +134,7 @@ add_executable(platonyzer
 	${platonyzer_RESOURCE})
 
 target_include_directories(platonyzer PRIVATE ${PROJECT_BINARY_DIR})
-target_link_libraries(platonyzer PRIVATE pdb-redo::pdb-redo std::filesystem libmcfp::libmcfp)
+target_link_libraries(platonyzer PRIVATE pdb-redo::pdb-redo std::filesystem mcfp::mcfp)
 if(NOT MSVC AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	target_link_libraries(platonyzer PRIVATE -static-libgcc -static-libstdc++)
 endif()
