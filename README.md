@@ -1,7 +1,7 @@
 platonyzer
 ==========
 
-This is the repository for platonyzer, an application to create restraints for metal sites. This program is part of the [PDB-REDO](https://pdb.redo.eu/) suite
+This is the repository for platonyzer, an application to create restraints for metal sites. This program is part of the [PDB-REDO](https://pdb-redo.eu/) suite
 of programs.
 
 Installation
