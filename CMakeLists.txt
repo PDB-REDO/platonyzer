@@ -99,18 +99,18 @@ include(VersionString)
 write_version_header("${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # Optionally use mrc to create resources
-find_package(Mrc QUIET)
+find_package(mrc QUIET)
 
 if(MRC_FOUND)
 	option(USE_RSRC "Use mrc to create resources" ON)
 else()
-	message(STATUS "Not using resources since mrc was not found")
+	message(STATUS "platonyzer: Not using resources since mrc was not found")
 endif()
 
 if(USE_RSRC)
 	set(USE_RSRC 1)
 
-	message("Using resources compiled with ${MRC_EXECUTABLE}")
+	message(STATUS "platonyzer: Using resources compiled with ${MRC_EXECUTABLE}")
 	add_compile_definitions(USE_RSRC)
 
 	mrc_write_header(${PROJECT_BINARY_DIR}/mrsrc.hpp)
@@ -121,12 +121,8 @@ if(NOT (mcfp_FOUND OR TARGET mcfp))
 	find_package(mcfp REQUIRED)
 endif()
 
-if(NOT (newuoa_FOUND OR TARGET newuoa))
-	find_package(newuoa REQUIRED)
-endif()
-
 if(NOT (pdb-redo_FOUND OR TARGET pdb-redo))
-	find_package(pdb-redo 3.2.0 REQUIRED)
+	find_package(pdb-redo 3.3.0 REQUIRED)
 endif()
 
 add_executable(platonyzer

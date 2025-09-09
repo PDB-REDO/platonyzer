@@ -265,14 +265,14 @@ bool IonSite::isOctaHedral()
 			auto &lb = std::get<0>(lig[b]);
 			float angle = cif::angle(la.get_location(), ion.get_location(), lb.get_location());
 
-			if (abs(angle - 180) < kMaxAllowedAngleDeviation) // opposing?
+			if (std::abs(angle - 180) < kMaxAllowedAngleDeviation) // opposing?
 			{
 				if (opposing_la++ > 0)
 					result = false;
 				else
 					opposing.emplace_back(a, b);
 			}
-			else if (abs(angle - 90) > kMaxAllowedAngleDeviation) // should be 90 degrees then
+			else if (std::abs(angle - 90) > kMaxAllowedAngleDeviation) // should be 90 degrees then
 				result = false;
 		}
 	}
@@ -724,7 +724,6 @@ int pr_main(int argc, char *argv[])
 
 		mcfp::make_option<std::string>("restraint-dict", "File containing restraints for residues in this specific target, can be specified multiple times."),
 		mcfp::make_option<std::string>("ccd-dict", "Dictionary file containing information in CCD format for residues in this specific target, can be specified multiple times.")
-	
 	);
 
 	config.parse(argc, argv);
