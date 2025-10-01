@@ -778,6 +778,7 @@ int pr_main(int argc, char *argv[])
 	RestraintGenerator rg(outfile_extra.replace_extension(".restraints").string(), config.has("delete-vdw-rest"));
 
 	auto &structConn = db["struct_conn"];
+	auto &structConnAngle = db["pdbx_struct_conn_angle"];
 
 	std::size_t removedLinks = 0, createdLinks = 0;
 	std::size_t platonyzerLinkId = 1;
@@ -811,6 +812,11 @@ int pr_main(int argc, char *argv[])
 			// replace LINK/struct_conn records
 			std::size_t n = structConn.size();
 			structConn.erase(
+				("ptnr1_label_asym_id"_key == ionSite.ion.get_label_asym_id() and "ptnr1_label_atom_id"_key == ionSite.ion.get_label_atom_id()) or
+				("ptnr2_label_asym_id"_key == ionSite.ion.get_label_asym_id() and "ptnr2_label_atom_id"_key == ionSite.ion.get_label_atom_id()));
+
+			// Remove struct_conn_angle records as well
+			structConnAngle.erase(
 				("ptnr1_label_asym_id"_key == ionSite.ion.get_label_asym_id() and "ptnr1_label_atom_id"_key == ionSite.ion.get_label_atom_id()) or
 				("ptnr2_label_asym_id"_key == ionSite.ion.get_label_asym_id() and "ptnr2_label_atom_id"_key == ionSite.ion.get_label_atom_id()));
 
