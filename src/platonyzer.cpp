@@ -30,7 +30,7 @@
 #include <unordered_set>
 
 #include <mcfp/mcfp.hpp>
-#include <cif++.hpp>
+#include <cif++/cif++.hpp>
 
 #include <pdb-redo/Compound.hpp>
 #include <pdb-redo/SkipList.hpp>
