@@ -764,7 +764,7 @@ int pr_main(int argc, char *argv[])
 
 	// -----------------------------------------------------------------------
 
-	std::string entryId = db["entry"].front()["id"].as<std::string>();
+	std::string entryId = db["entry"].front()["id"].get<std::string>();
 	if (entryId.empty())
 		throw std::runtime_error("Missing _entry.id in coordinates file");
 
